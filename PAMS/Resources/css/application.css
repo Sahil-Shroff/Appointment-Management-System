@@ -1,0 +1,11 @@
+.sideBtn {
+	-fx-background-color: #2997ff;
+}
+
+.sideBtn: hover {
+	-fx-background-color: rgb(50,50,50,.9);
+}
+
+.sideBtn: activated {
+	-fx-background-colour: #240000;
+}
