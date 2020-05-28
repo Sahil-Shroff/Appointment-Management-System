@@ -1,6 +1,10 @@
 package application;
 
 
+import java.sql.SQLException;
+
+import database.appointmentDAO;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -40,8 +44,13 @@ public class TabPaneAppointments {
 		return tabPaneAppointments;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static TableView<Patient> getAllNewAppointments() {
 		newAppointments = new TableView<>(newAppPat);
+		
+		TableColumn<Patient, Number> indexColumn = new TableColumn<Patient, Number>("Sr. No.");
+		indexColumn.setSortable(false);
+		indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<Number>(newAppointments.getItems().indexOf(column.getValue())));
 		
 		TableColumn<Patient, String> nameCol = new TableColumn<>("Name");
 		nameCol.setCellValueFactory(new PropertyValueFactory<Patient, String>("name"));
@@ -52,12 +61,17 @@ public class TabPaneAppointments {
 		
 		TableColumn<Patient, Button> removeCol = new TableColumn<>();
 		removeCol.setCellFactory(ActionButtonTableCell.<Patient>forTableColumn("Remove", (Patient p) -> {
-			
+			try {
+				appointmentDAO.deleteAppoint(p.getName());
+			} catch (ClassNotFoundException | SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		    newAppointments.getItems().remove(p);
 		    return p;
 		})); 
 		
-		newAppointments.getColumns().addAll(nameCol, genderCol, removeCol);
+		newAppointments.getColumns().addAll(indexColumn, nameCol, genderCol, removeCol);
 		newAppointments.setPrefHeight(500.0);
 		
 		newAppointments.setOnMouseClicked((e) -> {
@@ -84,6 +98,7 @@ public class TabPaneAppointments {
 		return newAppointments;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static TableView<Patient> getAllNewConsulteds() {
 		newConsulteds = new TableView<>(Model.getAllNewAppointments());
 		

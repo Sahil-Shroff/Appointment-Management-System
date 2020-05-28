@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import database.MySQLJDBCUtil;
+import database.appointmentDAO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
@@ -28,8 +29,8 @@ public class AppointmentsPage {
 	static Patient temp;
 	
 	static ObservableList<Patient> newAppPat = Model.getAllNewAppointments();
-	static ComboBox<String> genderChoice;
-	static TextField nameEntry;
+	public static ComboBox<String> genderChoice;
+	public static TextField nameEntry;
 	static Button add;
 	static TableView<Patient> newAppointments;
 	static TableView<Patient> newConsulteds;
@@ -79,28 +80,14 @@ public class AppointmentsPage {
 			nameEntry.textProperty().unbindBidirectional(temp.nameProperty());
 			if (flag == 0 && newAppPat.size() != 0)
 				newAppPat.remove(newAppPat.size() - 1);
-			ResultSet rs = null;
-	        
-	        String sql = "INSERT INTO new_appointment(name, gender) "
-	                   + "VALUES(?,?)";
-	        
-	        try (Connection conn = MySQLJDBCUtil.getConnection();
-	             PreparedStatement pstmt = conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);) {
-	            
-	            // set parameters for statement
-	            pstmt.setString(1, nameEntry.getText());
-	            pstmt.setString(2, genderChoice.getSelectionModel().getSelectedItem());
-	 
-	            pstmt.executeUpdate();
-	        } catch (SQLException ex) {
-	            System.out.println(ex.getMessage());
-	        } finally {
-	            try {
-	                if(rs != null)  rs.close();
-	            } catch (SQLException ex) {
-	                System.out.println(ex.getMessage());
-	            }
-	        }
+			
+			try {
+				appointmentDAO.insertPatient();
+			} catch (ClassNotFoundException | SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
 			newAppPat.add(new Patient(nameEntry.getText(), genderChoice.getSelectionModel().getSelectedItem()));
 			nameEntry.clear();
 			flag = 1;

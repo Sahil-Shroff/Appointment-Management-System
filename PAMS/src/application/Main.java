@@ -8,8 +8,10 @@ import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import controllers.DisplayController;
+import database.MySQLJDBCUtil;
 
 
 public class Main extends Application {
@@ -19,7 +21,13 @@ public class Main extends Application {
 		
 		int screenWidth = (int) Screen.getPrimary().getBounds().getWidth();
 	    int screenHeight = (int) Screen.getPrimary().getBounds().getHeight();
-	    int height = screenHeight - screenHeight / 16; 
+	    int height = screenHeight - screenHeight / 16;
+	    try {
+			MySQLJDBCUtil.getConnection();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		FXMLLoader fxml = new FXMLLoader(Main.class.getResource("../controllers/Display.fxml"));
 		VBox app = fxml.load();
 		app.setStyle("-fx-background-color: white;");
@@ -32,7 +40,16 @@ public class Main extends Application {
 		stage.setTitle("Reception");
 		stage.setFullScreen(true);
 		stage.show();
-		
+	}
+	
+	@Override
+	public void stop() {
+		try {
+			MySQLJDBCUtil.dbDisconnect();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public static void main(String[] args) {
