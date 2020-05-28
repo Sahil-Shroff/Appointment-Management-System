@@ -1,14 +1,7 @@
 package application;
 
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
-import database.MySQLJDBCUtil;
 import database.appointmentDAO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -82,16 +75,14 @@ public class AppointmentsPage {
 				newAppPat.remove(newAppPat.size() - 1);
 			
 			try {
-				appointmentDAO.insertPatient();
+				int id = appointmentDAO.insertPatient();
+				newAppPat.add(new Patient(id, nameEntry.getText(), genderChoice.getSelectionModel().getSelectedItem()));
+				nameEntry.clear();
+				flag = 1;
+				nameEntry.requestFocus();
 			} catch (ClassNotFoundException | SQLException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			
-			newAppPat.add(new Patient(nameEntry.getText(), genderChoice.getSelectionModel().getSelectedItem()));
-			nameEntry.clear();
-			flag = 1;
-			nameEntry.requestFocus();
 		});
 		
 		genderChoice.setOnKeyPressed((e) -> {

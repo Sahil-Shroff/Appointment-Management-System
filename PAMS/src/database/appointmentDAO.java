@@ -11,9 +11,9 @@ import application.Patient;
 
 public class appointmentDAO {
 	
-	public static void deleteAppoint(String name) throws SQLException, ClassNotFoundException {
+	public static void deleteAppoint(int id) throws SQLException, ClassNotFoundException {
         //Declare a DELETE statement
-        String updateStmt = "DELETE FROM new_appointment WHERE name = "+ name;
+        String updateStmt = "DELETE FROM new_appointment WHERE idnew_table = "+ id + ";";
  
         //Execute UPDATE operation
         try {
@@ -24,7 +24,7 @@ public class appointmentDAO {
         }
     }
 	
-	public static void insertPatient() throws SQLException, ClassNotFoundException {
+	public static int insertPatient() throws SQLException, ClassNotFoundException {
         //Declare a DELETE statement
 		ResultSet rs = null;
         
@@ -38,30 +38,27 @@ public class appointmentDAO {
             pstmt.setString(2, AppointmentsPage.genderChoice.getSelectionModel().getSelectedItem());
  
             pstmt.executeUpdate();
+            String sql2 = "SELECT MAX(idnew_table) From new_appointment;";
+            rs = MySQLJDBCUtil.dbExecuteQuery(sql2);
+            //return rs.getInt(1);
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
-        } finally {
-            try {
-                if(rs != null)  rs.close();
-            } catch (SQLException ex) {
-                System.out.println(ex.getMessage());
-            }
         }
+        rs.next();
+        return rs.getInt(1);
     }
 	
 	public static void loadNewAppoint() throws ClassNotFoundException {
-		//ResultSet rs = null;
-		try {
-		    		    
-		    String sql = "SELECT name, age, gender FROM new_appointment";
-		    MySQLJDBCUtil.dbExecuteQuery(sql);
-		    /*while( rs.next() ) {
+		try {	    
+		    String sql = "SELECT idnew_table, name, age, gender FROM new_appointment";
+		    ResultSet rs = MySQLJDBCUtil.dbExecuteQuery(sql);
+		    while( rs.next() ) {
+		    	int id = rs.getInt(1);
 		    	String name = rs.getString("name");
 		    	int age = rs.getInt("age");
 		    	String gender = rs.getString("gender");
-		    	Model.newAppPat.add(new Patient(name, age, gender));
-		    }*/
-		    
+		    	Model.newAppPat.add(new Patient(id, name, age, gender));
+		    }
 		} catch(SQLException e) {
 		   System.out.println(e.getMessage());
 		}

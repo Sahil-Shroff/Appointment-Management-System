@@ -62,7 +62,7 @@ public class TabPaneAppointments {
 		TableColumn<Patient, Button> removeCol = new TableColumn<>();
 		removeCol.setCellFactory(ActionButtonTableCell.<Patient>forTableColumn("Remove", (Patient p) -> {
 			try {
-				appointmentDAO.deleteAppoint(p.getName());
+				appointmentDAO.deleteAppoint(p.getId());
 			} catch (ClassNotFoundException | SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

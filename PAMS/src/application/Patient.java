@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleStringProperty;
 
 public class Patient {
 	
+	private SimpleIntegerProperty id = new SimpleIntegerProperty();
 	private SimpleStringProperty name;
 	private SimpleIntegerProperty age;
 	private ObjectProperty<String> gender;
@@ -23,12 +24,28 @@ public class Patient {
 		this.gender = new SimpleObjectProperty<String>(gender);
 	}
 	
+	public Patient(int id, String name, String gender) {
+		this.id = new SimpleIntegerProperty(id);
+		this.name = new SimpleStringProperty(name);
+		age = new SimpleIntegerProperty(0);
+		this.gender = new SimpleObjectProperty<String>(gender);
+	}
+	
 	public Patient(String name, int age, String gender) {
 		this.name = new SimpleStringProperty(name);
 		this.age = new SimpleIntegerProperty(age);
 		this.gender = new SimpleObjectProperty<String>(gender);
 	}
+	
+	public Patient(int id, String name, int age, String gender) {
+		this.id = new SimpleIntegerProperty(id);
+		this.name = new SimpleStringProperty(name);
+		this.age = new SimpleIntegerProperty(age);
+		this.gender = new SimpleObjectProperty<String>(gender);
+	}
 
+	public int getId() {	return id.get();	}
+	
 	public SimpleStringProperty nameProperty() { return name; }
 	
 	public String getName() { return name.get(); }
