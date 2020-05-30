@@ -1,18 +1,23 @@
 package application;
 
 
+import java.util.Optional;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.stage.StageStyle;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import javafx.util.converter.DefaultStringConverter;
@@ -37,20 +42,31 @@ public class EditCell < S, T > extends TextFieldTableCell < S, T > {
     }
     @Override
     public void startEdit() {
-        if (!isEditable() || !getTableView().isEditable() ||
-            !getTableColumn().isEditable()) {
-            return;
-        }
-        super.startEdit();
-        if (isEditing()) {
-            if (textField == null) {
-                textField = getTextField();
-            }
-            escapePressed = false;
-            startEdit(textField);
-            final TableView < S > table = getTableView();
-            tablePos = table.getEditingCell();
-        }
+    	Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.initOwner(Main.stage);
+		alert.initStyle(StageStyle.TRANSPARENT);
+    	alert.setTitle("Confirm");
+    	String s = "Do you want to change name?";
+    	alert.setContentText(s);
+    	 
+    	Optional<ButtonType> result = alert.showAndWait();
+    	 
+    	if ((result.isPresent()) && (result.get() == ButtonType.OK)) { 
+    		if (!isEditable() || !getTableView().isEditable() ||
+    	            !getTableColumn().isEditable()) {
+    	            return;
+    	        }
+    	        super.startEdit();
+    	        if (isEditing()) {
+    	            if (textField == null) {
+    	                textField = getTextField();
+    	            }
+    	            escapePressed = false;
+    	            startEdit(textField);
+    	            final TableView < S > table = getTableView();
+    	            tablePos = table.getEditingCell();
+    	        }
+    	}
     }
     /** {@inheritDoc} */
     @Override

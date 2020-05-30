@@ -10,7 +10,7 @@ import javafx.util.Callback;
 
 public class ActionButtonTableCell<S> extends TableCell<S, Button> {
 
-    private final Button actionButton;
+    private Button actionButton;
 
     public ActionButtonTableCell(String label, Function< S, S> function) {
         this.getStyleClass().add("action-button-table-cell");
@@ -29,7 +29,7 @@ public class ActionButtonTableCell<S> extends TableCell<S, Button> {
     public static <S> Callback<TableColumn<S, Button>, TableCell<S, Button>> forTableColumn(String label, Function< S, S> function) {
         return param -> new ActionButtonTableCell<>(label, function);
     }
-
+    
     @Override
     public void updateItem(Button item, boolean empty) {
         super.updateItem(item, empty);

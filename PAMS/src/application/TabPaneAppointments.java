@@ -2,11 +2,15 @@ package application;
 
 
 import java.sql.SQLException;
+import java.util.Optional;
 
 import database.appointmentDAO;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -16,7 +20,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseButton;
+import javafx.stage.StageStyle;
 
 public class TabPaneAppointments {
 	
@@ -61,25 +65,29 @@ public class TabPaneAppointments {
 		
 		TableColumn<Patient, Button> removeCol = new TableColumn<>();
 		removeCol.setCellFactory(ActionButtonTableCell.<Patient>forTableColumn("Remove", (Patient p) -> {
-			try {
-				appointmentDAO.deleteAppoint(p.getId());
-			} catch (ClassNotFoundException | SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		    newAppointments.getItems().remove(p);
-		    return p;
+			Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.initOwner(Main.stage);
+			alert.initStyle(StageStyle.TRANSPARENT);
+        	alert.setTitle("Confirm");
+        	String s = "Are you sure you want to remove?";
+        	alert.setContentText(s);
+        	 
+        	Optional<ButtonType> result = alert.showAndWait();
+        	 
+        	if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
+        		try {
+    				if (p.getId() != 0)
+    					appointmentDAO.deleteAppoint(p.getId());
+    					newAppointments.getItems().remove(p);
+    			} catch (ClassNotFoundException | SQLException e1) {
+    				e1.printStackTrace();
+    			}      	    
+        	}
+			return p;
 		})); 
 		
 		newAppointments.getColumns().addAll(indexColumn, nameCol, genderCol, removeCol);
 		newAppointments.setPrefHeight(500.0);
-		
-		newAppointments.setOnMouseClicked((e) -> {
-			if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2 && newAppointments.getItems().size() != 0) {
-				newConsulteds.getItems().add(newAppointments.getSelectionModel().getSelectedItem());
-				newAppointments.getItems().remove(newAppointments.getSelectionModel().getSelectedItem());
-			}
-		});
 		
 		setTableEditable();
 		nameCol.setCellFactory(
@@ -87,23 +95,29 @@ public class TabPaneAppointments {
 	        // updates the salary field on the PersonTableData object to the
 	        // committed value
 	    nameCol.setOnEditCommit(event -> {
-	            final String value = event.getNewValue() != null ?
-	            event.getNewValue() : event.getOldValue();
-	            if (event.getTablePosition().getRow() < newAppPat.size())
-	            	((Patient) event.getTableView().getItems()
-	                .get(event.getTablePosition().getRow())).setName(value);
-	            newAppointments.refresh();
-	        });
+	        final String value = event.getNewValue() != null ?
+	        event.getNewValue() : event.getOldValue();
+	        Patient p = (Patient) event.getTableView().getItems().get(event.getTablePosition().getRow());
+	        if (event.getTablePosition().getRow() < newAppPat.size())
+	        	p.setName(value);
+	        appointmentDAO.updateName(p.getId(), value);
+	        newAppointments.refresh();
+	    });
 		
 		return newAppointments;
 	}
 	
 	@SuppressWarnings("unchecked")
 	public static TableView<Patient> getAllNewConsulteds() {
-		newConsulteds = new TableView<>(Model.getAllNewAppointments());
+		newConsulteds = new TableView<>(Model.getAllNewConsulteds());
+		
+		TableColumn<Patient, Number> indexColumn = new TableColumn<Patient, Number>("Sr. No.");
+		indexColumn.setSortable(false);
+		indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<Number>(newConsulteds.getItems().indexOf(column.getValue())));
 		
 		TableColumn<Patient, String> nameCol = new TableColumn<>("Name");
 		nameCol.setCellValueFactory(new PropertyValueFactory<Patient, String>("name"));
+		nameCol.setPrefWidth(300.0);
 		
 		TableColumn<Patient, Integer> ageCol = new TableColumn<>("Age");
 		ageCol.setCellValueFactory(new PropertyValueFactory<Patient, Integer>("age"));
@@ -111,7 +125,33 @@ public class TabPaneAppointments {
 		TableColumn<Patient, String> genderCol = new TableColumn<>("Gender");
 		genderCol.setCellValueFactory(new PropertyValueFactory<Patient, String>("gender"));
 		
-		newConsulteds.getColumns().addAll(nameCol, ageCol, genderCol);
+		TableColumn<Patient, Integer> feesCol = new TableColumn<>("Fees");
+		feesCol.setCellValueFactory(new PropertyValueFactory<Patient, Integer>("fees"));
+		
+		TableColumn<Patient, String> feesPaidCol = new TableColumn<>("Payment Status");
+		feesPaidCol.setCellValueFactory(new PropertyValueFactory<Patient, String>("feesPaid"));
+		feesPaidCol.setPrefWidth(200.0);
+		
+		TableColumn<Patient, Button> payCol = new TableColumn<>();
+		payCol.setCellFactory(ActionButtonTableCell.<Patient>forTableColumn("Pay/UnPay", (Patient p) -> {
+			Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.initOwner(Main.stage);
+			alert.initStyle(StageStyle.TRANSPARENT);
+        	alert.setTitle("Confirm");
+        	String s = "Are you sure to click fees pay/unpay?";
+        	alert.setContentText(s);
+        	 
+        	Optional<ButtonType> result = alert.showAndWait();
+        	 
+        	if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
+        		newConsulteds.getColumns().get(0).setVisible(false);
+    			newConsulteds.getColumns().get(0).setVisible(true);
+    			appointmentDAO.payFees(!p.isFeesPaid(), p.getId(), p);        	    
+        	}
+			 return p;
+		}));
+		
+		newConsulteds.getColumns().addAll(indexColumn, nameCol, ageCol, genderCol, feesCol, feesPaidCol, payCol);
 		return newConsulteds;
 	}
 	
@@ -121,6 +161,7 @@ public class TabPaneAppointments {
         newAppointments.getSelectionModel().cellSelectionEnabledProperty().set(true);
         // when character or numbers pressed it will start edit in editable
         // fields
+        
         newAppointments.setOnKeyPressed(event -> {
             if (event.getCode().isLetterKey() || event.getCode().isDigitKey()) {
                 editFocusedCell();

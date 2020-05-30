@@ -11,6 +11,8 @@ public class Patient {
 	private SimpleStringProperty name;
 	private SimpleIntegerProperty age;
 	private ObjectProperty<String> gender;
+	private SimpleIntegerProperty fees = new SimpleIntegerProperty(0);
+	private SimpleIntegerProperty feesPaid = new SimpleIntegerProperty(0);
 	
 	public Patient() {
 		name = new SimpleStringProperty("");
@@ -30,18 +32,47 @@ public class Patient {
 		age = new SimpleIntegerProperty(0);
 		this.gender = new SimpleObjectProperty<String>(gender);
 	}
-	
-	public Patient(String name, int age, String gender) {
-		this.name = new SimpleStringProperty(name);
-		this.age = new SimpleIntegerProperty(age);
-		this.gender = new SimpleObjectProperty<String>(gender);
-	}
-	
+
 	public Patient(int id, String name, int age, String gender) {
 		this.id = new SimpleIntegerProperty(id);
 		this.name = new SimpleStringProperty(name);
 		this.age = new SimpleIntegerProperty(age);
 		this.gender = new SimpleObjectProperty<String>(gender);
+	}
+	
+	public Patient(int id, String name, int age, String gender, int fees, int fees_paid) {
+		this.id = new SimpleIntegerProperty(id);
+		this.name = new SimpleStringProperty(name);
+		this.age = new SimpleIntegerProperty(age);
+		this.gender = new SimpleObjectProperty<String>(gender);
+		this.fees = new SimpleIntegerProperty(fees);
+		this.feesPaid = new SimpleIntegerProperty(fees_paid);
+	}
+	public int getFees() { return fees.get();	}
+	
+	public SimpleIntegerProperty getFeesProperty() {	return fees;	}
+	
+	public SimpleIntegerProperty getFeesPaidProperty() {	return feesPaid;	}
+	
+	public void setFeesPaidProperty(boolean pay) {
+		if (pay)
+			feesPaid = new SimpleIntegerProperty(1);
+		else
+			feesPaid = new SimpleIntegerProperty(0);
+	}
+	
+	public String getFeesPaid() {
+		if (feesPaid.get() > 0)
+			return "Paid";
+		else
+			return "Not Paid";
+	}
+	
+	public boolean isFeesPaid() {
+		if (feesPaid.get() > 0)
+			return true;
+		else
+			return false;
 	}
 
 	public int getId() {	return id.get();	}

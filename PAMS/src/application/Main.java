@@ -16,9 +16,12 @@ import database.MySQLJDBCUtil;
 
 public class Main extends Application {
 	
+	public static Stage stage = null;
+	
 	@Override
 	public void start(Stage stage) throws IOException {
 		
+		Main.stage = stage;
 		int screenWidth = (int) Screen.getPrimary().getBounds().getWidth();
 	    int screenHeight = (int) Screen.getPrimary().getBounds().getHeight();
 	    int height = screenHeight - screenHeight / 16;
