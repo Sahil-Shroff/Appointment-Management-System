@@ -8,11 +8,14 @@ import javafx.beans.property.SimpleStringProperty;
 public class Patient {
 	
 	private SimpleIntegerProperty id = new SimpleIntegerProperty();
+	private SimpleIntegerProperty order = new SimpleIntegerProperty(0);
 	private SimpleStringProperty name;
 	private SimpleIntegerProperty age;
 	private ObjectProperty<String> gender;
 	private SimpleIntegerProperty fees = new SimpleIntegerProperty(0);
 	private SimpleIntegerProperty feesPaid = new SimpleIntegerProperty(0);
+	private SimpleIntegerProperty priority = new SimpleIntegerProperty(0);
+	private SimpleIntegerProperty receipt = new SimpleIntegerProperty(1);
 	
 	public Patient() {
 		name = new SimpleStringProperty("");
@@ -20,16 +23,19 @@ public class Patient {
 		gender = new SimpleObjectProperty<String>();
 	}
 	
-	public Patient(String name, String gender) {
+	public Patient(int id, int order, String name, int age, String gender, int priority) {
+		this.id = new SimpleIntegerProperty(id);
+		this.order = new SimpleIntegerProperty(order);
 		this.name = new SimpleStringProperty(name);
-		age = new SimpleIntegerProperty(0);
+		this.age = new SimpleIntegerProperty(age);
 		this.gender = new SimpleObjectProperty<String>(gender);
+		this.priority = new SimpleIntegerProperty(priority);
 	}
 	
 	public Patient(int id, String name, String gender) {
 		this.id = new SimpleIntegerProperty(id);
 		this.name = new SimpleStringProperty(name);
-		age = new SimpleIntegerProperty(0);
+		this.age = new SimpleIntegerProperty(0);
 		this.gender = new SimpleObjectProperty<String>(gender);
 	}
 
@@ -40,14 +46,24 @@ public class Patient {
 		this.gender = new SimpleObjectProperty<String>(gender);
 	}
 	
-	public Patient(int id, String name, int age, String gender, int fees, int fees_paid) {
+	public Patient(int id, String name, int age, String gender, int fees, int fees_paid, int receipt) {
 		this.id = new SimpleIntegerProperty(id);
 		this.name = new SimpleStringProperty(name);
 		this.age = new SimpleIntegerProperty(age);
 		this.gender = new SimpleObjectProperty<String>(gender);
 		this.fees = new SimpleIntegerProperty(fees);
 		this.feesPaid = new SimpleIntegerProperty(fees_paid);
+		this.receipt = new SimpleIntegerProperty(receipt);
 	}
+	
+	public Patient(int id, int order, String name, String gender, int priority) {
+		this.id = new SimpleIntegerProperty(id);
+		this.order = new SimpleIntegerProperty(order);
+		this.name = new SimpleStringProperty(name);
+		this.gender = new SimpleObjectProperty<String>(gender);
+		this.priority = new SimpleIntegerProperty(priority);
+	}
+	
 	public int getFees() { return fees.get();	}
 	
 	public SimpleIntegerProperty getFeesProperty() {	return fees;	}
@@ -92,5 +108,6 @@ public class Patient {
 	public String getGender() {	return gender.get(); }
 
 	public void setGender(String gender) { this.gender = new SimpleObjectProperty<String>(gender); }
-	
+
+	public int getOrder() {	return order.get();	}
 }

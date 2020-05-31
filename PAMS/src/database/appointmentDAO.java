@@ -17,22 +17,27 @@ public class appointmentDAO {
  
         //Execute UPDATE operation
         try {
-            MySQLJDBCUtil.dbExecuteUpdate(updateStmt);
+            PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(updateStmt);//MySQLJDBCUtil.dbExecuteUpdate(updateStmt);
+            psmt.executeUpdate();
         } catch (SQLException e) {
             System.out.print("Error occurred while DELETE Operation: " + e);
             throw e;
         }
     }
 	
-	public static int insertPatient() throws SQLException, ClassNotFoundException {
+	public static int insertPatient(int priority) throws SQLException, ClassNotFoundException {
 		ResultSet rs = null;
         
-        String sql = "INSERT INTO new_appointment(name, gender) VALUES(?,?)";
+        String sql = "INSERT INTO new_appointment (`order`, `name`, `gender`, `priority`) VALUES (?,?,?,?);";
         int pos = 0;
+        int countAppoint = AppointmentsPage.newAppPat.size();
         try ( PreparedStatement pstmt = MySQLJDBCUtil.conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);) {
             // set parameters for statement
-            pstmt.setString(1, AppointmentsPage.nameEntry.getText());
-            pstmt.setString(2, AppointmentsPage.genderChoice.getSelectionModel().getSelectedItem());
+        	int order = countAppoint + 1;
+        	pstmt.setInt(1, order);
+            pstmt.setString(2, AppointmentsPage.nameEntry.getText());
+            pstmt.setString(3, AppointmentsPage.genderChoice.getSelectionModel().getSelectedItem());
+            pstmt.setBoolean(4, false);
             pstmt.executeUpdate();
             rs = pstmt.getGeneratedKeys();
             rs.next();
@@ -50,17 +55,19 @@ public class appointmentDAO {
 		else
 			sql = "UPDATE consulteds SET fees_paid = 0 WHERE idconsulteds = " + id;
 		try {
-			MySQLJDBCUtil.dbExecuteUpdate(sql);
+			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
+			psmt.executeUpdate();
 			p.setFeesPaidProperty(pay);
 			//System.out.println("Working");
-		} catch (ClassNotFoundException | SQLException e) {
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 	
 	public static void loadconsulteds() throws ClassNotFoundException {
 		try {	    
-		    String sql = "SELECT idconsulteds, name, age, gender, fees, fees_paid FROM consulteds";
+		    String sql = "SELECT idconsulteds, name, age, gender, fees, fees_paid, receipt FROM consulteds";
+		    //PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);
 		    ResultSet rs = MySQLJDBCUtil.dbExecuteQuery(sql);
 		    while( rs.next() ) {
 		    	int id = rs.getInt(1);
@@ -69,7 +76,8 @@ public class appointmentDAO {
 		    	String gender = rs.getString("gender");
 		    	int fees = rs.getInt("fees");
 		    	int feesPaid = rs.getInt("fees_paid");
-		    	Model.consulteds.add(new Patient(id, name, age, gender, fees, feesPaid));
+		    	int receipt = rs.getInt("receipt");
+		    	Model.consulteds.add(new Patient(id, name, age, gender, fees, feesPaid, receipt));
 		    }
 		} catch(SQLException e) {
 		   System.out.println(e.getMessage());
@@ -78,14 +86,16 @@ public class appointmentDAO {
 	
 	public static void loadNewAppoint() throws ClassNotFoundException {
 		try {	    
-		    String sql = "SELECT idnew_table, name, age, gender FROM new_appointment";
+		    String sql = "SELECT `idnew_table`, `order`, `name`, `age`, `gender`, `priority` FROM new_appointment";
 		    ResultSet rs = MySQLJDBCUtil.dbExecuteQuery(sql);
 		    while( rs.next() ) {
 		    	int id = rs.getInt(1);
+		    	int order = rs.getInt("order");
 		    	String name = rs.getString("name");
 		    	int age = rs.getInt("age");
 		    	String gender = rs.getString("gender");
-		    	Model.newAppPat.add(new Patient(id, name, age, gender));
+		    	int priority = rs.getInt("priority");
+		    	Model.newAppPat.add(new Patient(id, order, name, age, gender, priority));
 		    }
 		} catch(SQLException e) {
 		   System.out.println(e.getMessage());
@@ -95,10 +105,10 @@ public class appointmentDAO {
 	public static void updateName(int id, String newName) {
 		String sql;
 		sql = "UPDATE new_appointment SET name = \" " + newName + "\" WHERE idnew_table = " + id;
-		//sql = "UPDATE new_appointment SET name = \"Sahil\" WHERE idnew_table = 59;";
 		try {
-			MySQLJDBCUtil.dbExecuteUpdate(sql);
-		} catch (ClassNotFoundException | SQLException e) {
+			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
+			psmt.executeUpdate();
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}

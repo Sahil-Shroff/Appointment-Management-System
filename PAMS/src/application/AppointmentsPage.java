@@ -21,7 +21,7 @@ public class AppointmentsPage {
 	static int flag = 1;
 	static Patient temp;
 	
-	static ObservableList<Patient> newAppPat = Model.getAllNewAppointments();
+	public static ObservableList<Patient> newAppPat = Model.getAllNewAppointments();
 	public static ComboBox<String> genderChoice;
 	public static TextField nameEntry;
 	static Button add;
@@ -75,8 +75,9 @@ public class AppointmentsPage {
 				newAppPat.remove(newAppPat.size() - 1);
 			
 			try {
-				int id = appointmentDAO.insertPatient();
-				newAppPat.add(new Patient(id, nameEntry.getText(), genderChoice.getSelectionModel().getSelectedItem()));
+				int countAppoint = newAppPat.size();
+				int id = appointmentDAO.insertPatient(0);
+				newAppPat.add(new Patient(id, 1 + countAppoint, nameEntry.getText(), genderChoice.getSelectionModel().getSelectedItem(), 0));
 				nameEntry.clear();
 				flag = 1;
 				nameEntry.requestFocus();

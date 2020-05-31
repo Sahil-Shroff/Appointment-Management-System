@@ -56,6 +56,10 @@ public class TabPaneAppointments {
 		indexColumn.setSortable(false);
 		indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<Number>(newAppointments.getItems().indexOf(column.getValue())));
 		
+		TableColumn<Patient, Number> orderColumn = new TableColumn<Patient, Number>("Patient No.");
+		orderColumn.setCellValueFactory(new PropertyValueFactory<Patient, Number>("order"));
+		orderColumn.setPrefWidth(100);
+		
 		TableColumn<Patient, String> nameCol = new TableColumn<>("Name");
 		nameCol.setCellValueFactory(new PropertyValueFactory<Patient, String>("name"));
 		nameCol.setPrefWidth(300.0);
@@ -86,7 +90,7 @@ public class TabPaneAppointments {
 			return p;
 		})); 
 		
-		newAppointments.getColumns().addAll(indexColumn, nameCol, genderCol, removeCol);
+		newAppointments.getColumns().addAll(indexColumn, orderColumn, nameCol, genderCol, removeCol);
 		newAppointments.setPrefHeight(500.0);
 		
 		setTableEditable();
@@ -100,6 +104,7 @@ public class TabPaneAppointments {
 	        Patient p = (Patient) event.getTableView().getItems().get(event.getTablePosition().getRow());
 	        if (event.getTablePosition().getRow() < newAppPat.size())
 	        	p.setName(value);
+	        //System.out.println(p.getId());:wrong
 	        appointmentDAO.updateName(p.getId(), value);
 	        newAppointments.refresh();
 	    });
