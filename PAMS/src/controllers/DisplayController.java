@@ -1,5 +1,8 @@
 package controllers;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import application.AppointmentsPage;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
@@ -22,6 +25,9 @@ public class DisplayController {
 	
 	@FXML
 	private VBox contentBox;
+	
+	@FXML
+	private Text currentDate;
 	
 	@FXML
 	private Text dateHead;
@@ -52,6 +58,12 @@ public class DisplayController {
 		fontSize.bind(scene.widthProperty().add(scene.heightProperty()).divide(160));
 		refImgSizeX.bind(scene.widthProperty().divide(1920));
 		refImgSizeY.bind(scene.heightProperty().divide(1080));
+		
+		Date date = new Date();
+		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+		String strDate= formatter.format(date);
+		currentDate = new Text(strDate);
+		System.out.println(strDate);
 		
 		this.menuBtn.styleProperty().bind(Bindings.concat("-fx-scale-x: ", refImgSizeX.asString(), ";",
 													 "-fx-scale-y: ", refImgSizeY.asString(), ";"
@@ -85,11 +97,10 @@ public class DisplayController {
 	
 	@FXML
 	public void hideSideMenu() {
-		mainBox = this.mainBox;
-		if(mainBox.getChildren().size() == 2)
-			mainBox.getChildren().remove(0);
+		if(this.mainBox.getChildren().size() == 2)
+			this.mainBox.getChildren().remove(0);
 		else
-			mainBox.getChildren().add(0, sideMenu);
+			this.mainBox.getChildren().add(0, sideMenu);
 	}
 
 }

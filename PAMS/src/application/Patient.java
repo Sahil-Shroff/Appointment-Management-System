@@ -19,6 +19,7 @@ public class Patient {
 	
 	public Patient() {
 		name = new SimpleStringProperty("");
+		order = new SimpleIntegerProperty(AppointmentsPage.newAppPat.size() + 1);
 		age = new SimpleIntegerProperty(0);
 		gender = new SimpleObjectProperty<String>();
 	}
@@ -56,7 +57,7 @@ public class Patient {
 		this.receipt = new SimpleIntegerProperty(receipt);
 	}
 	
-	public Patient(int id, int order, String name, String gender, int priority) {
+	public Patient(int id, int order, int age, String name, String gender, int priority) {
 		this.id = new SimpleIntegerProperty(id);
 		this.order = new SimpleIntegerProperty(order);
 		this.name = new SimpleStringProperty(name);
@@ -66,9 +67,9 @@ public class Patient {
 	
 	public int getFees() { return fees.get();	}
 	
-	public SimpleIntegerProperty getFeesProperty() {	return fees;	}
+	//public SimpleIntegerProperty getFeesProperty() {	return fees;	}
 	
-	public SimpleIntegerProperty getFeesPaidProperty() {	return feesPaid;	}
+	//public SimpleIntegerProperty getFeesPaidProperty() {	return feesPaid;	}
 	
 	public void setFeesPaidProperty(boolean pay) {
 		if (pay)
@@ -90,7 +91,32 @@ public class Patient {
 		else
 			return false;
 	}
+	
+	public boolean isReceiptTaken() {
+		if (receipt.get() > 0)
+			return true;
+		else
+			return false;
+	}
+	
+	public String getReceiptTaken() {
+		if (receipt.get() > 0)
+			return "Receipt";
+		else
+			return "Cash";
+	}
 
+	public void setReceiptProperty(boolean sel) {
+		if (this.isFeesPaid()) {
+			if (sel)
+				receipt = new SimpleIntegerProperty(1);
+			else
+				receipt = new SimpleIntegerProperty(0);
+		} else {
+			receipt = new SimpleIntegerProperty(0);
+		}
+	}
+	
 	public int getId() {	return id.get();	}
 	
 	public SimpleStringProperty nameProperty() { return name; }
@@ -109,5 +135,9 @@ public class Patient {
 
 	public void setGender(String gender) { this.gender = new SimpleObjectProperty<String>(gender); }
 
+	//public SimpleStringProperty ageProperty() {	return new SimpleStringProperty(age.toString());	}
+	
 	public int getOrder() {	return order.get();	}
+	
+	public void setOrder(int order) {	this.order = new SimpleIntegerProperty(order);	}
 }

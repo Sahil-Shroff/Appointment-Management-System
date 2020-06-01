@@ -35,9 +35,14 @@
                   </Text>
                </children>
             </HBox>
-            <HBox alignment="CENTER" prefHeight="77.0" prefWidth="430.0">
+            <HBox alignment="CENTER" prefHeight="77.0" prefWidth="430.0" spacing="10.0">
                <children>
-                  <Text fx:id="dateHead" strokeType="OUTSIDE" strokeWidth="0.0" text="Date">
+                  <Text fx:id="dateHead" strokeType="OUTSIDE" strokeWidth="0.0" text="Date:">
+                     <font>
+                        <Font size="41.0" />
+                     </font>
+                  </Text>
+                  <Text fx:id="currentDate" layoutX="168.0" layoutY="75.0" strokeType="OUTSIDE" strokeWidth="0.0">
                      <font>
                         <Font size="41.0" />
                      </font>

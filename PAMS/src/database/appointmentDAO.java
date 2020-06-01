@@ -8,6 +8,7 @@ import java.sql.Statement;
 import application.AppointmentsPage;
 import application.Model;
 import application.Patient;
+import javafx.beans.property.SimpleStringProperty;
 
 public class appointmentDAO {
 	
@@ -28,7 +29,7 @@ public class appointmentDAO {
 	public static int insertPatient(int priority) throws SQLException, ClassNotFoundException {
 		ResultSet rs = null;
         
-        String sql = "INSERT INTO new_appointment (`order`, `name`, `gender`, `priority`) VALUES (?,?,?,?);";
+        String sql = "INSERT INTO new_appointment (`order`, `name`, `gender`, `age`, `priority`) VALUES (?,?,?,?,?);";
         int pos = 0;
         int countAppoint = AppointmentsPage.newAppPat.size();
         try ( PreparedStatement pstmt = MySQLJDBCUtil.conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);) {
@@ -37,7 +38,8 @@ public class appointmentDAO {
         	pstmt.setInt(1, order);
             pstmt.setString(2, AppointmentsPage.nameEntry.getText());
             pstmt.setString(3, AppointmentsPage.genderChoice.getSelectionModel().getSelectedItem());
-            pstmt.setBoolean(4, false);
+            pstmt.setInt(4, Integer.parseInt(AppointmentsPage.ageEntry.getText()));
+            pstmt.setBoolean(5, false);
             pstmt.executeUpdate();
             rs = pstmt.getGeneratedKeys();
             rs.next();
@@ -64,11 +66,27 @@ public class appointmentDAO {
 		}
 	}
 	
+	public static void updateReceiptStatus(boolean sel, int id, Patient p) {
+		String sql = "UPDATE consulteds SET receipt = 0 WHERE idconsulteds = " + id;
+		if (p.isFeesPaid())
+		if (sel)
+			sql = "UPDATE consulteds SET receipt = 1 WHERE idconsulteds = " + id;
+		try {
+			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
+			psmt.executeUpdate();
+			p.setReceiptProperty(sel);
+			//System.out.println("Working");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public static void loadconsulteds() throws ClassNotFoundException {
 		try {	    
 		    String sql = "SELECT idconsulteds, name, age, gender, fees, fees_paid, receipt FROM consulteds";
 		    //PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);
 		    ResultSet rs = MySQLJDBCUtil.dbExecuteQuery(sql);
+		    int income = 0;
 		    while( rs.next() ) {
 		    	int id = rs.getInt(1);
 		    	String name = rs.getString("name");
@@ -78,7 +96,10 @@ public class appointmentDAO {
 		    	int feesPaid = rs.getInt("fees_paid");
 		    	int receipt = rs.getInt("receipt");
 		    	Model.consulteds.add(new Patient(id, name, age, gender, fees, feesPaid, receipt));
+		    	if (feesPaid > 0)
+		    		income += fees;
 		    }
+			AppointmentsPage.income.set(income);
 		} catch(SQLException e) {
 		   System.out.println(e.getMessage());
 		}
@@ -105,6 +126,39 @@ public class appointmentDAO {
 	public static void updateName(int id, String newName) {
 		String sql;
 		sql = "UPDATE new_appointment SET name = \" " + newName + "\" WHERE idnew_table = " + id;
+		try {
+			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
+			psmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void updateGender(int id, String newGender) {
+		String sql;
+		sql = "UPDATE new_appointment SET gender = \" " + newGender + "\" WHERE idnew_table = " + id;
+		try {
+			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
+			psmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void updateOrder(int id, int newOrder) {
+		String sql;
+		sql = "UPDATE new_appointment SET `order` = " + newOrder + " WHERE idnew_table = " + id;
+		try {
+			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
+			psmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void updateAge(int id, int newAge) {
+		String sql;
+		sql = "UPDATE new_appointment SET `age` = " + newAge + " WHERE idnew_table = " + id;
 		try {
 			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
 			psmt.executeUpdate();

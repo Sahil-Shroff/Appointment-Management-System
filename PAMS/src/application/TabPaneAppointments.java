@@ -3,7 +3,6 @@ package application;
 
 import java.sql.SQLException;
 import java.util.Optional;
-
 import database.appointmentDAO;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ObservableList;
@@ -21,6 +20,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.stage.StageStyle;
+import javafx.util.converter.IntegerStringConverter;
+import javafx.util.converter.NumberStringConverter;
 
 public class TabPaneAppointments {
 	
@@ -54,18 +55,23 @@ public class TabPaneAppointments {
 		
 		TableColumn<Patient, Number> indexColumn = new TableColumn<Patient, Number>("Sr. No.");
 		indexColumn.setSortable(false);
-		indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<Number>(newAppointments.getItems().indexOf(column.getValue())));
+		indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<Number>(newAppointments.getItems().indexOf(column.getValue()) + 1));
 		
 		TableColumn<Patient, Number> orderColumn = new TableColumn<Patient, Number>("Patient No.");
 		orderColumn.setCellValueFactory(new PropertyValueFactory<Patient, Number>("order"));
+		orderColumn.setSortType(TableColumn.SortType.ASCENDING);
 		orderColumn.setPrefWidth(100);
 		
 		TableColumn<Patient, String> nameCol = new TableColumn<>("Name");
 		nameCol.setCellValueFactory(new PropertyValueFactory<Patient, String>("name"));
 		nameCol.setPrefWidth(300.0);
+		
+		TableColumn<Patient, Integer> ageCol = new TableColumn<>("Age");
+		ageCol.setCellValueFactory(new PropertyValueFactory<Patient, Integer>("age"));
 
 		TableColumn<Patient, String> genderCol = new TableColumn<>("Gender");
 		genderCol.setCellValueFactory(new PropertyValueFactory<Patient, String>("gender"));
+		genderCol.setCellFactory(col -> new EditChoiceCell(col));
 		
 		TableColumn<Patient, Button> removeCol = new TableColumn<>();
 		removeCol.setCellFactory(ActionButtonTableCell.<Patient>forTableColumn("Remove", (Patient p) -> {
@@ -80,9 +86,10 @@ public class TabPaneAppointments {
         	 
         	if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
         		try {
-    				if (p.getId() != 0)
+    				if (p.getId() != 0) {
     					appointmentDAO.deleteAppoint(p.getId());
     					newAppointments.getItems().remove(p);
+    				}
     			} catch (ClassNotFoundException | SQLException e1) {
     				e1.printStackTrace();
     			}      	    
@@ -90,7 +97,8 @@ public class TabPaneAppointments {
 			return p;
 		})); 
 		
-		newAppointments.getColumns().addAll(indexColumn, orderColumn, nameCol, genderCol, removeCol);
+		newAppointments.getColumns().addAll(indexColumn, orderColumn, nameCol, ageCol, genderCol, removeCol);
+		newAppointments.getSortOrder().add(orderColumn);
 		newAppointments.setPrefHeight(500.0);
 		
 		setTableEditable();
@@ -104,9 +112,41 @@ public class TabPaneAppointments {
 	        Patient p = (Patient) event.getTableView().getItems().get(event.getTablePosition().getRow());
 	        if (event.getTablePosition().getRow() < newAppPat.size())
 	        	p.setName(value);
-	        //System.out.println(p.getId());:wrong
 	        appointmentDAO.updateName(p.getId(), value);
 	        newAppointments.refresh();
+	    });
+	    
+	    orderColumn.setCellFactory(EditCell. < Patient, Number > forTableColumn(new NumberStringConverter()));
+	    orderColumn.setOnEditCommit(event -> {
+	        final int value = event.getNewValue() != null ?
+	        		event.getNewValue().intValue() : event.getOldValue().intValue();
+	        Patient p = (Patient) event.getTableView().getItems().get(event.getTablePosition().getRow());
+	        if (event.getTablePosition().getRow() < newAppPat.size())
+	        	p.setOrder(value);
+	        appointmentDAO.updateOrder(p.getId(), value);
+	        newAppointments.refresh();
+	    });
+	    
+	    ageCol.setCellFactory(EditCell. < Patient, Integer > forTableColumn(new IntegerStringConverter()));
+	    ageCol.setOnEditCommit(event -> {
+	        final int value = event.getNewValue() != null ?
+	        		event.getNewValue().intValue() : event.getOldValue().intValue();
+	        Patient p = (Patient) event.getTableView().getItems().get(event.getTablePosition().getRow());
+	        if (event.getTablePosition().getRow() < newAppPat.size())
+	        	p.setAge(value);
+	        appointmentDAO.updateAge(p.getId(), value);
+	        newAppointments.refresh();
+	    });
+	    
+	    genderCol.setOnEditCommit(event -> {
+	    	final String value = event.getNewValue() != null ?
+			        event.getNewValue() : event.getOldValue();
+			Patient p = (Patient) event.getTableView().getItems().get(event.getTablePosition().getRow());
+			if (event.getTablePosition().getRow() < newAppPat.size()) {
+				p.setGender(value);
+				appointmentDAO.updateGender(p.getId(), value);
+			}
+			newAppointments.refresh();
 	    });
 		
 		return newAppointments;
@@ -118,7 +158,7 @@ public class TabPaneAppointments {
 		
 		TableColumn<Patient, Number> indexColumn = new TableColumn<Patient, Number>("Sr. No.");
 		indexColumn.setSortable(false);
-		indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<Number>(newConsulteds.getItems().indexOf(column.getValue())));
+		indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<Number>(newConsulteds.getItems().indexOf(column.getValue()) + 1));
 		
 		TableColumn<Patient, String> nameCol = new TableColumn<>("Name");
 		nameCol.setCellValueFactory(new PropertyValueFactory<Patient, String>("name"));
@@ -151,12 +191,41 @@ public class TabPaneAppointments {
         	if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
         		newConsulteds.getColumns().get(0).setVisible(false);
     			newConsulteds.getColumns().get(0).setVisible(true);
-    			appointmentDAO.payFees(!p.isFeesPaid(), p.getId(), p);        	    
+    			appointmentDAO.payFees(!p.isFeesPaid(), p.getId(), p);
+    			int income = 0;
+    			for (Patient patient : newConsulteds.getItems()) {
+					if (patient.isFeesPaid())
+						income += patient.getFees();
+				}
+    			AppointmentsPage.income.set(income);
+        	}
+			return p;
+		}));
+		
+		TableColumn<Patient, String> receiptTakenCol = new TableColumn<>("Receipt/Cash");
+		receiptTakenCol.setCellValueFactory(new PropertyValueFactory<Patient, String>("receiptTaken"));
+		receiptTakenCol.setPrefWidth(200.0);
+		
+		TableColumn<Patient, Button> receiptBtn = new TableColumn<>();
+		receiptBtn.setCellFactory(ActionButtonTableCell.<Patient>forTableColumn("R/C change", (Patient p) -> {
+			Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.initOwner(Main.stage);
+			alert.initStyle(StageStyle.TRANSPARENT);
+        	alert.setTitle("Confirm");
+        	String s = "Are you sure you want to change mode of payment?";
+        	alert.setContentText(s);
+        	 
+        	Optional<ButtonType> result = alert.showAndWait();
+        	 
+        	if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
+        		newConsulteds.getColumns().get(0).setVisible(false);
+    			newConsulteds.getColumns().get(0).setVisible(true);
+    			appointmentDAO.updateReceiptStatus(!p.isReceiptTaken(), p.getId(), p);        	    
         	}
 			 return p;
 		}));
 		
-		newConsulteds.getColumns().addAll(indexColumn, nameCol, ageCol, genderCol, feesCol, feesPaidCol, payCol);
+		newConsulteds.getColumns().addAll(indexColumn, nameCol, ageCol, genderCol, feesCol, feesPaidCol, payCol, receiptTakenCol, receiptBtn);
 		return newConsulteds;
 	}
 	

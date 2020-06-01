@@ -28,7 +28,6 @@ public class Main extends Application {
 	    try {
 			MySQLJDBCUtil.getConnection();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		FXMLLoader fxml = new FXMLLoader(Main.class.getResource("../controllers/Display.fxml"));
