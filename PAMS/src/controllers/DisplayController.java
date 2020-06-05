@@ -1,19 +1,29 @@
 package controllers;
 
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
 
 import application.AppointmentsPage;
+import application.Main;
+import application.TabPaneAppointments;
+import database.appointmentDAO;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.StageStyle;
 
 public class DisplayController {
 	
@@ -62,8 +72,8 @@ public class DisplayController {
 		Date date = new Date();
 		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 		String strDate= formatter.format(date);
-		currentDate = new Text(strDate);
-		System.out.println(strDate);
+		currentDate.textProperty().set(strDate);
+		//System.out.println(strDate);
 		
 		this.menuBtn.styleProperty().bind(Bindings.concat("-fx-scale-x: ", refImgSizeX.asString(), ";",
 													 "-fx-scale-y: ", refImgSizeY.asString(), ";"
@@ -72,6 +82,7 @@ public class DisplayController {
 		accountBtn.styleProperty().bind(Bindings.concat("-fx-font-size: ", fontSize.asString(), ";"));
 		
 		appointmentsBtn.styleProperty().bind(Bindings.concat("-fx-font-size: ", fontSize.asString(), ";"));
+		appointmentsBtn.setOnAction(e -> displayAppointments());
 		
 		recordsBtn.styleProperty().bind(Bindings.concat("-fx-font-size: ", fontSize.asString(), ";"));
 		
@@ -80,6 +91,7 @@ public class DisplayController {
 		titleHead.styleProperty().bind(Bindings.concat("-fx-font-size: ", fontSize.multiply(2).asString(), ";"));
 		
 		dateHead.styleProperty().bind(Bindings.concat("-fx-font-size: ", fontSize.multiply(2).asString(), ";"));
+		currentDate.styleProperty().bind(Bindings.concat("-fx-font-size: ", fontSize.multiply(2).asString(), ";"));
 		
 		displayAppointments();
 	}
@@ -87,8 +99,27 @@ public class DisplayController {
 	@FXML
 	public void displayAppointments() {
 		contentBox.getChildren().clear();
+		Button btn = new Button("complete day");
+		btn.setOnAction(e -> {
+			Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.initOwner(Main.stage);
+			alert.initStyle(StageStyle.TRANSPARENT);
+        	alert.setTitle("Confirm");
+        	String s = "Are you sure you want to wind up?";
+        	alert.setContentText(s);
+        	 
+        	Optional<ButtonType> result = alert.showAndWait();
+        	 
+        	if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
+        		((TabPane) ((VBox) contentBox.getChildren().get(0)).getChildren().get(1)).getSelectionModel().select(1);
+        		TabPaneAppointments.newConsulteds.getColumns().get(9).setVisible(true);
+        		
+        		//appointmentDAO.completeSession();    	    
+        	}
+		});
+		
 		VBox appointments = new VBox(AppointmentsPage.createUpperDashBoard(),
-									 AppointmentsPage.createTabs()
+									 AppointmentsPage.createTabs(), btn
 									);
 		appointments.setSpacing(10.0);
 		appointments.setStyle("-fx-padding: 0 0 0 10; -fx-font-family: sansSherif;");

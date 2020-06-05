@@ -5,20 +5,16 @@ import database.appointmentDAO;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
 public class AppointmentsPage {
@@ -26,9 +22,10 @@ public class AppointmentsPage {
 	public static SimpleIntegerProperty limit = new SimpleIntegerProperty(10);
 	public static SimpleIntegerProperty income = new SimpleIntegerProperty(0);
 	public static ObservableList<Patient> newAppPat = Model.getAllNewAppointments();
+	public static ObservableList<Patient> futAppPat = Model.getFutureAppointments();
 	public static ComboBox<String> genderChoice;
 	public static TextField nameEntry;
-	public static TextField ageEntry;
+	public static int ageTemp;
 	static Button add;
 	static TableView<Patient> newAppointments;
 	public static TableView<Patient> newConsulteds;
@@ -53,8 +50,11 @@ public class AppointmentsPage {
 		genderChoice.setStyle("-fx-background-color: #2997ff;");
 		
 		Label age = new Label("Age");
-		ageEntry = new TextField();
+		TextField ageEntry = new TextField();
 		ageEntry.setPrefWidth(40.0);
+		
+		//Label next = new Label("Next session");
+		CheckBox nextOpn = new CheckBox("Next session");
 		
 		nameEntry.setOnKeyPressed((e) -> {
 			if (e.getCode().equals(KeyCode.ENTER))
@@ -71,16 +71,32 @@ public class AppointmentsPage {
 				newAppPat.remove(newAppPat.size() - 1);
 			
 			try {
-				int countAppoint = newAppPat.size();
-				int id = appointmentDAO.insertPatient(0);
-				int ageTemp;
-				if (ageEntry.getText().equalsIgnoreCase(""))
+				if (nextOpn.isSelected()) {
+					int countAppoint = futAppPat.size();
+					int id = appointmentDAO.insertFuturePatient(0);
 					ageTemp = 0;
-				else
-					ageTemp = Integer.parseInt(ageEntry.getText());
-				newAppPat.add(new Patient(id, 1 + countAppoint, ageTemp, nameEntry.getText(),
-						genderChoice.getSelectionModel().getSelectedItem(), 0));
+					try {
+						ageTemp = Integer.parseInt(ageEntry.getText());
+					} catch (Exception e1) {
+						System.out.println("Exception");
+					}
+					futAppPat.add(new Patient(id, 1 + countAppoint, ageTemp, nameEntry.getText(),
+							genderChoice.getSelectionModel().getSelectedItem(), 0));
+				} else {
+					int countAppoint = newAppPat.size() + TabPaneAppointments.newConsulteds.getItems().size();
+					int id = appointmentDAO.insertPatient(0);
+					ageTemp = 0;
+					try {
+						ageTemp = Integer.parseInt(ageEntry.getText());
+					} catch (Exception e1) {
+						System.out.println("Exception");
+					}
+					newAppPat.add(new Patient(id, 1 + countAppoint, ageTemp, nameEntry.getText(),
+							genderChoice.getSelectionModel().getSelectedItem(), 0));
+				}
+				TabPaneAppointments.newAppointments.sort();
 				nameEntry.clear();
+				nextOpn.selectedProperty().setValue(false);
 				flag = 1;
 				nameEntry.requestFocus();
 			} catch (ClassNotFoundException | SQLException e1) {
@@ -100,6 +116,11 @@ public class AppointmentsPage {
 				add.fire();
 			}
 		});
+		nextOpn.setOnKeyPressed(e -> {
+			if (e.getCode().equals(KeyCode.ENTER)) {
+				add.fire();
+			}
+		});
 		
 		HBox nameBox = new HBox(name, nameEntry);
 		nameBox.setSpacing(12.0);
@@ -110,7 +131,7 @@ public class AppointmentsPage {
 		HBox ageBox = new HBox(age, ageEntry);
 		ageBox.setSpacing(5.0);
 		
-		HBox AGBox = new HBox(genderBox, ageBox);
+		HBox AGBox = new HBox(genderBox, ageBox, nextOpn);
 		AGBox.setSpacing(20.0);
 		
 		HBox btnWrapper = new HBox(add);					//for padding of btn
@@ -167,11 +188,9 @@ public class AppointmentsPage {
 		statusDisplay.setPrefWidth(200.0);
 		statusDisplay.setStyle("-fx-background-color: #ffffff;" +
 								"-fx-padding: 6 4 4 4;");
-		//statusDisplay.setVisible(false);
-		statusDisplay.setOnMouseMoved(e ->
-			statusDisplay.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY))));
-		statusDisplay.setOnMouseExited(e -> 
-			statusDisplay.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY))));
+		statusDisplay.setOpacity(0);
+		statusDisplay.setOnMouseMoved(e -> statusDisplay.setOpacity(1.0));
+		statusDisplay.setOnMouseExited(e -> statusDisplay.setOpacity(0));
 		
 		return statusDisplay;
 	}

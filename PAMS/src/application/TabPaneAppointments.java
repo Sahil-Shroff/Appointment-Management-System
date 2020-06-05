@@ -5,11 +5,13 @@ import java.sql.SQLException;
 import java.util.Optional;
 import database.appointmentDAO;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -28,8 +30,9 @@ public class TabPaneAppointments {
 	static ComboBox<String> genderChoice = AppointmentsPage.genderChoice;
 	static TextField nameEntry = AppointmentsPage.nameEntry;
 	static TableView<Patient> newAppointments = AppointmentsPage.newAppointments;
-	static TableView<Patient> newConsulteds = AppointmentsPage.newConsulteds;
+	public static TableView<Patient> newConsulteds = AppointmentsPage.newConsulteds;
 	static ObservableList<Patient> newAppPat = AppointmentsPage.newAppPat;
+	static ObservableList<Patient> futAppPat = AppointmentsPage.futAppPat;
 	
 	public static TabPane createTabs() {
 		Tab pendingPatients = new Tab("Pending Patients");
@@ -40,8 +43,12 @@ public class TabPaneAppointments {
 		consultedPatients.setContent(getAllNewConsulteds());
 		consultedPatients.setClosable(false);
 		
+		Tab futurePatients = new Tab("Next Session");
+		futurePatients.setContent(getFutureAppointments());
+		futurePatients.setClosable(false);
+		
 		TabPane tabPaneAppointments = new TabPane();
-		tabPaneAppointments.getTabs().addAll(pendingPatients, consultedPatients);
+		tabPaneAppointments.getTabs().addAll(pendingPatients, consultedPatients, futurePatients);
 		tabPaneAppointments.setStyle("-fx-background-color: #ffffff;" +
 						 "-fx-padding: 2;"
 				);
@@ -112,7 +119,7 @@ public class TabPaneAppointments {
 	        Patient p = (Patient) event.getTableView().getItems().get(event.getTablePosition().getRow());
 	        if (event.getTablePosition().getRow() < newAppPat.size())
 	        	p.setName(value);
-	        appointmentDAO.updateName(p.getId(), value);
+	        appointmentDAO.updateName(p.getId(), value, false);
 	        newAppointments.refresh();
 	    });
 	    
@@ -123,7 +130,7 @@ public class TabPaneAppointments {
 	        Patient p = (Patient) event.getTableView().getItems().get(event.getTablePosition().getRow());
 	        if (event.getTablePosition().getRow() < newAppPat.size())
 	        	p.setOrder(value);
-	        appointmentDAO.updateOrder(p.getId(), value);
+	        appointmentDAO.updateOrder(p.getId(), value, false);
 	        newAppointments.refresh();
 	    });
 	    
@@ -134,7 +141,7 @@ public class TabPaneAppointments {
 	        Patient p = (Patient) event.getTableView().getItems().get(event.getTablePosition().getRow());
 	        if (event.getTablePosition().getRow() < newAppPat.size())
 	        	p.setAge(value);
-	        appointmentDAO.updateAge(p.getId(), value);
+	        appointmentDAO.updateAge(p.getId(), value, false);
 	        newAppointments.refresh();
 	    });
 	    
@@ -144,7 +151,7 @@ public class TabPaneAppointments {
 			Patient p = (Patient) event.getTableView().getItems().get(event.getTablePosition().getRow());
 			if (event.getTablePosition().getRow() < newAppPat.size()) {
 				p.setGender(value);
-				appointmentDAO.updateGender(p.getId(), value);
+				appointmentDAO.updateGender(p.getId(), value, false);
 			}
 			newAppointments.refresh();
 	    });
@@ -225,8 +232,123 @@ public class TabPaneAppointments {
 			 return p;
 		}));
 		
-		newConsulteds.getColumns().addAll(indexColumn, nameCol, ageCol, genderCol, feesCol, feesPaidCol, payCol, receiptTakenCol, receiptBtn);
+		TableColumn<Patient, CheckBox> select = new TableColumn<>();
+		select.setCellValueFactory(column -> {
+			CheckBox checkBox = new CheckBox();
+			Patient p = column.getValue();
+            checkBox.selectedProperty().setValue(p.getSel());
+			checkBox.selectedProperty().addListener((ov, old, n) -> {
+				p.setSel(n);
+			});
+			return new SimpleObjectProperty<CheckBox>(checkBox);
+		});
+		select.setVisible(false);
+		
+		newConsulteds.getColumns().addAll(indexColumn, nameCol, ageCol, genderCol, feesCol, feesPaidCol, payCol, receiptTakenCol, receiptBtn, select);
 		return newConsulteds;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static TableView<Patient> getFutureAppointments() {
+		TableView<Patient> futureAppointments = new TableView<>(futAppPat);
+		
+		TableColumn<Patient, Number> indexColumn = new TableColumn<Patient, Number>("Sr. No.");
+		indexColumn.setSortable(false);
+		indexColumn.setCellValueFactory(column-> new ReadOnlyObjectWrapper<Number>(futureAppointments.getItems().indexOf(column.getValue()) + 1));
+		
+		TableColumn<Patient, Number> orderColumn = new TableColumn<Patient, Number>("Patient No.");
+		orderColumn.setCellValueFactory(new PropertyValueFactory<Patient, Number>("order"));
+		orderColumn.setSortType(TableColumn.SortType.ASCENDING);
+		orderColumn.setPrefWidth(100);
+		
+		TableColumn<Patient, String> nameCol = new TableColumn<>("Name");
+		nameCol.setCellValueFactory(new PropertyValueFactory<Patient, String>("name"));
+		nameCol.setPrefWidth(300.0);
+		
+		TableColumn<Patient, Integer> ageCol = new TableColumn<>("Age");
+		ageCol.setCellValueFactory(new PropertyValueFactory<Patient, Integer>("age"));
+
+		TableColumn<Patient, String> genderCol = new TableColumn<>("Gender");
+		genderCol.setCellValueFactory(new PropertyValueFactory<Patient, String>("gender"));
+		genderCol.setCellFactory(col -> new EditChoiceCell(col));
+		
+		TableColumn<Patient, Button> removeCol = new TableColumn<>();
+		removeCol.setCellFactory(ActionButtonTableCell.<Patient>forTableColumn("Remove", (Patient p) -> {
+			Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.initOwner(Main.stage);
+			alert.initStyle(StageStyle.TRANSPARENT);
+        	alert.setTitle("Confirm");
+        	String s = "Are you sure you want to remove?";
+        	alert.setContentText(s);
+        	 
+        	Optional<ButtonType> result = alert.showAndWait();
+        	 
+        	if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
+        		try {
+    				if (p.getId() != 0) {
+    					appointmentDAO.deleteFutureAppoint(p.getId());
+    					futureAppointments.getItems().remove(p);
+    				}
+    			} catch (Exception e1) {
+    				e1.printStackTrace();
+    			}      	    
+        	}
+			return p;
+		})); 
+		
+		futureAppointments.getColumns().addAll(indexColumn, orderColumn, nameCol, ageCol, genderCol, removeCol);
+		futureAppointments.getSortOrder().add(orderColumn);
+		futureAppointments.setPrefHeight(500.0);
+		
+		futureAppointments.setEditable(true);
+		nameCol.setCellFactory(
+	            EditCell.< Patient> forTableColumn());
+	        // updates the salary field on the PersonTableData object to the
+	        // committed value
+	    nameCol.setOnEditCommit(event -> {
+	        final String value = event.getNewValue() != null ?
+	        event.getNewValue() : event.getOldValue();
+	        Patient p = (Patient) event.getTableView().getItems().get(event.getTablePosition().getRow());
+	        if (event.getTablePosition().getRow() < futAppPat.size())
+	        	p.setName(value);
+	        appointmentDAO.updateName(p.getId(), value, true);
+	        futureAppointments.refresh();
+	    });
+	    
+	    orderColumn.setCellFactory(EditCell. < Patient, Number > forTableColumn(new NumberStringConverter()));
+	    orderColumn.setOnEditCommit(event -> {
+	        final int value = event.getNewValue() != null ?
+	        		event.getNewValue().intValue() : event.getOldValue().intValue();
+	        Patient p = (Patient) event.getTableView().getItems().get(event.getTablePosition().getRow());
+	        if (event.getTablePosition().getRow() < futAppPat.size())
+	        	p.setOrder(value);
+	        appointmentDAO.updateOrder(p.getId(), value, true);
+	        futureAppointments.refresh();
+	    });
+	    
+	    ageCol.setCellFactory(EditCell. < Patient, Integer > forTableColumn(new IntegerStringConverter()));
+	    ageCol.setOnEditCommit(event -> {
+	        final int value = event.getNewValue() != null ?
+	        		event.getNewValue().intValue() : event.getOldValue().intValue();
+	        Patient p = (Patient) event.getTableView().getItems().get(event.getTablePosition().getRow());
+	        if (event.getTablePosition().getRow() < futAppPat.size())
+	        	p.setAge(value);
+	        appointmentDAO.updateAge(p.getId(), value, true);
+	        futureAppointments.refresh();
+	    });
+	    
+	    genderCol.setOnEditCommit(event -> {
+	    	final String value = event.getNewValue() != null ?
+			        event.getNewValue() : event.getOldValue();
+			Patient p = (Patient) event.getTableView().getItems().get(event.getTablePosition().getRow());
+			if (event.getTablePosition().getRow() < futAppPat.size()) {
+				p.setGender(value);
+				appointmentDAO.updateGender(p.getId(), value, true);
+			}
+			futureAppointments.refresh();
+	    });
+		
+		return futureAppointments;
 	}
 	
     private static void setTableEditable() {
@@ -253,6 +375,7 @@ public class TabPaneAppointments {
             }
         });
     }
+    
     @SuppressWarnings("unchecked")
     private static void editFocusedCell() {
         final TablePosition < Patient, ? > focusedCell = newAppointments

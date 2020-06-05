@@ -1,6 +1,7 @@
 package application;
 
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -16,6 +17,7 @@ public class Patient {
 	private SimpleIntegerProperty feesPaid = new SimpleIntegerProperty(0);
 	private SimpleIntegerProperty priority = new SimpleIntegerProperty(0);
 	private SimpleIntegerProperty receipt = new SimpleIntegerProperty(1);
+	private SimpleBooleanProperty sel = new SimpleBooleanProperty(false);
 	
 	public Patient() {
 		name = new SimpleStringProperty("");
@@ -60,6 +62,7 @@ public class Patient {
 	public Patient(int id, int order, int age, String name, String gender, int priority) {
 		this.id = new SimpleIntegerProperty(id);
 		this.order = new SimpleIntegerProperty(order);
+		this.age = new SimpleIntegerProperty(age);
 		this.name = new SimpleStringProperty(name);
 		this.gender = new SimpleObjectProperty<String>(gender);
 		this.priority = new SimpleIntegerProperty(priority);
@@ -135,9 +138,13 @@ public class Patient {
 
 	public void setGender(String gender) { this.gender = new SimpleObjectProperty<String>(gender); }
 
-	//public SimpleStringProperty ageProperty() {	return new SimpleStringProperty(age.toString());	}
+	public SimpleIntegerProperty ageProperty() {	return age;	}
 	
 	public int getOrder() {	return order.get();	}
 	
-	public void setOrder(int order) {	this.order = new SimpleIntegerProperty(order);	}
+	public void setOrder(int order) {	this.order.set(order);	}
+
+	public boolean getSel() {	return sel.get();	}
+
+	public void setSel(boolean sel) {	this.sel.set(sel);	}
 }

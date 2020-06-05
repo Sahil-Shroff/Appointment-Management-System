@@ -8,9 +8,24 @@ import java.sql.Statement;
 import application.AppointmentsPage;
 import application.Model;
 import application.Patient;
+import application.TabPaneAppointments;
 import javafx.beans.property.SimpleStringProperty;
 
 public class appointmentDAO {
+	
+	public static void completeSession() {
+		String sql1 = "BEGIN;" + "INSERT INTO history( `name`, `gender`, `age`, `fees`, `fees_paid`, `receipt`) " +
+						"SELECT `name`, `gender`, `age`, `priority`, `fees`, `fees_paid`, `receipt` FROM consulteds;";
+		String sql2 = "UPDATE INTO history(`order`, `priority`) " +
+						"SELECT `order`, `priority` FROM new_appointments;";
+		String sql3 = "INSERT INTO new_appointment(`order`, `name`, `gender`, `age`, `priority`) " +
+						"SELECT `order`, `name`, `gender`, `age`, `priority` FROM next_session;";
+		try {
+			MySQLJDBCUtil.dbExecuteUpdate(sql1);
+		} catch (ClassNotFoundException | SQLException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	public static void deleteAppoint(int id) throws SQLException, ClassNotFoundException {
         //Declare a DELETE statement
@@ -31,14 +46,14 @@ public class appointmentDAO {
         
         String sql = "INSERT INTO new_appointment (`order`, `name`, `gender`, `age`, `priority`) VALUES (?,?,?,?,?);";
         int pos = 0;
-        int countAppoint = AppointmentsPage.newAppPat.size();
+        int countAppoint = AppointmentsPage.newAppPat.size() + TabPaneAppointments.newConsulteds.getItems().size();
         try ( PreparedStatement pstmt = MySQLJDBCUtil.conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);) {
             // set parameters for statement
         	int order = countAppoint + 1;
         	pstmt.setInt(1, order);
             pstmt.setString(2, AppointmentsPage.nameEntry.getText());
             pstmt.setString(3, AppointmentsPage.genderChoice.getSelectionModel().getSelectedItem());
-            pstmt.setInt(4, Integer.parseInt(AppointmentsPage.ageEntry.getText()));
+            pstmt.setInt(4, AppointmentsPage.ageTemp);
             pstmt.setBoolean(5, false);
             pstmt.executeUpdate();
             rs = pstmt.getGeneratedKeys();
@@ -123,47 +138,123 @@ public class appointmentDAO {
 		}
 	}
 	
-	public static void updateName(int id, String newName) {
-		String sql;
-		sql = "UPDATE new_appointment SET name = \" " + newName + "\" WHERE idnew_table = " + id;
+	public static void loadFutureAppoint() throws ClassNotFoundException {
+		try {	    
+		    String sql = "SELECT `idnext_session`, `order`, `name`, `age`, `gender`, `priority` FROM next_session";
+		    ResultSet rs = MySQLJDBCUtil.dbExecuteQuery(sql);
+		    while( rs.next() ) {
+		    	int id = rs.getInt(1);
+		    	int order = rs.getInt("order");
+		    	String name = rs.getString("name");
+		    	int age = rs.getInt("age");
+		    	String gender = rs.getString("gender");
+		    	int priority = rs.getInt("priority");
+		    	Model.futAppPat.add(new Patient(id, order, name, age, gender, priority));
+		    }
+		} catch(SQLException e) {
+		   System.out.println(e.getMessage());
+		}
+	}
+	
+	public static void updateName(int id, String newName, boolean future) {
+		String sql1, sql2;
+		sql1 = "UPDATE next_session SET name = \" " + newName + "\" WHERE idnext_session = " + id;
+		sql2 = "UPDATE new_appointment SET name = \" " + newName + "\" WHERE idnew_table = " + id;
 		try {
-			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
-			psmt.executeUpdate();
+			PreparedStatement psmt1 = MySQLJDBCUtil.conn.prepareStatement(sql1);//MySQLJDBCUtil.dbExecuteUpdate(sql);
+			PreparedStatement psmt2 = MySQLJDBCUtil.conn.prepareStatement(sql2);
+			if (future)
+				psmt1.executeUpdate();
+			else
+				psmt2.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public static void updateGender(int id, String newGender) {
-		String sql;
-		sql = "UPDATE new_appointment SET gender = \" " + newGender + "\" WHERE idnew_table = " + id;
+	public static void updateGender(int id, String newGender, boolean future) {
+		String sql1, sql2;
+		sql1 = "UPDATE next_session SET gender = \" " + newGender + "\" WHERE idnext_session = " + id;
+		sql2 = "UPDATE new_appointment SET gender = \" " + newGender + "\" WHERE idnew_table = " + id;
 		try {
-			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
-			psmt.executeUpdate();
+			PreparedStatement psmt1 = MySQLJDBCUtil.conn.prepareStatement(sql1);//MySQLJDBCUtil.dbExecuteUpdate(sql);
+			PreparedStatement psmt2 = MySQLJDBCUtil.conn.prepareStatement(sql2);
+			if (future)
+				psmt1.executeUpdate();
+			else
+				psmt2.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public static void updateOrder(int id, int newOrder) {
-		String sql;
-		sql = "UPDATE new_appointment SET `order` = " + newOrder + " WHERE idnew_table = " + id;
+	public static void updateOrder(int id, int newOrder, boolean future) {
+		String sql1, sql2;
+		sql1 = "UPDATE next_session SET `order` = " + newOrder + " WHERE idnext_session = " + id;
+		sql2 = "UPDATE new_appointment SET `order` = " + newOrder + " WHERE idnew_table = " + id;
 		try {
-			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
-			psmt.executeUpdate();
+			PreparedStatement psmt1 = MySQLJDBCUtil.conn.prepareStatement(sql1);//MySQLJDBCUtil.dbExecuteUpdate(sql);
+			PreparedStatement psmt2 = MySQLJDBCUtil.conn.prepareStatement(sql2);
+			if (future)
+				psmt1.executeUpdate();
+			else
+				psmt2.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public static void updateAge(int id, int newAge) {
-		String sql;
-		sql = "UPDATE new_appointment SET `age` = " + newAge + " WHERE idnew_table = " + id;
+	public static void updateAge(int id, int newAge, boolean future) {
+		String sql1, sql2;
+		sql1 = "UPDATE next_session SET `age` = " + newAge + " WHERE idnext_session= " + id;
+		sql2 = "UPDATE new_appointment SET `age` = " + newAge + " WHERE idnew_table = " + id;
 		try {
-			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
-			psmt.executeUpdate();
+			PreparedStatement psmt1 = MySQLJDBCUtil.conn.prepareStatement(sql1);//MySQLJDBCUtil.dbExecuteUpdate(sql);
+			PreparedStatement psmt2 = MySQLJDBCUtil.conn.prepareStatement(sql2);
+			if (future)
+				psmt1.executeUpdate();
+			else
+				psmt2.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void deleteFutureAppoint(int id) throws SQLException, ClassNotFoundException {
+	    //Declare a DELETE statement
+	    String updateStmt = "DELETE FROM next_session WHERE idnext_session = "+ id + ";";
+
+	    //Execute UPDATE operation
+	    try {
+	        PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(updateStmt);//MySQLJDBCUtil.dbExecuteUpdate(updateStmt);
+	        psmt.executeUpdate();
+	    } catch (SQLException e) {
+	        System.out.print("Error occurred while DELETE Operation: " + e);
+	        throw e;
+	    }
+	}
+
+	public static int insertFuturePatient(int priority) throws SQLException, ClassNotFoundException {
+		ResultSet rs = null;
+	    
+	    String sql = "INSERT INTO next_session (`order`, `name`, `gender`, `age`, `priority`) VALUES (?,?,?,?,?);";
+	    int pos = 0;
+	    int countAppoint = AppointmentsPage.futAppPat.size();
+	    try ( PreparedStatement pstmt = MySQLJDBCUtil.conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);) {
+	        // set parameters for statement
+	    	int order = countAppoint + 1;
+	    	pstmt.setInt(1, order);
+	        pstmt.setString(2, AppointmentsPage.nameEntry.getText());
+	        pstmt.setString(3, AppointmentsPage.genderChoice.getSelectionModel().getSelectedItem());
+	        pstmt.setInt(4, AppointmentsPage.ageTemp);
+	        pstmt.setBoolean(5, false);
+	        pstmt.executeUpdate();
+	        rs = pstmt.getGeneratedKeys();
+	        rs.next();
+	        pos = rs.getInt(1);
+	    } catch (SQLException ex) {
+	        System.out.println(ex.getMessage());
+	    }
+	    return pos;
 	}
 }

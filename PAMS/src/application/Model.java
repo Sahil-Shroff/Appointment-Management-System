@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 public class Model {
 	public static ObservableList<Patient> newAppPat;
 	public static ObservableList<Patient> consulteds;
+	public static ObservableList<Patient> futAppPat;
 	
 	public static ObservableList<Patient> getAllNewAppointments() {
 		newAppPat = FXCollections.<Patient>observableArrayList();
@@ -29,5 +30,16 @@ public class Model {
 		}
 		//System.out.println("ok " + consulteds.size());
 		return consulteds;
+	}
+	
+	public static ObservableList<Patient> getFutureAppointments() {
+		futAppPat = FXCollections.<Patient>observableArrayList();
+		try {
+			appointmentDAO.loadFutureAppoint();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return futAppPat;
 	}
 }
