@@ -239,6 +239,7 @@ public class TabPaneAppointments {
             checkBox.selectedProperty().setValue(p.getSel());
 			checkBox.selectedProperty().addListener((ov, old, n) -> {
 				p.setSel(n);
+				appointmentDAO.updateSelStatus(p.getSel(), p.getId(), p);
 			});
 			return new SimpleObjectProperty<CheckBox>(checkBox);
 		});

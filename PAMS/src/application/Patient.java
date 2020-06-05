@@ -49,7 +49,7 @@ public class Patient {
 		this.gender = new SimpleObjectProperty<String>(gender);
 	}
 	
-	public Patient(int id, String name, int age, String gender, int fees, int fees_paid, int receipt) {
+	public Patient(int id, String name, int age, String gender, int fees, int fees_paid, int receipt, boolean sel) {
 		this.id = new SimpleIntegerProperty(id);
 		this.name = new SimpleStringProperty(name);
 		this.age = new SimpleIntegerProperty(age);
@@ -57,6 +57,7 @@ public class Patient {
 		this.fees = new SimpleIntegerProperty(fees);
 		this.feesPaid = new SimpleIntegerProperty(fees_paid);
 		this.receipt = new SimpleIntegerProperty(receipt);
+		this.sel = new SimpleBooleanProperty(sel);
 	}
 	
 	public Patient(int id, int order, int age, String name, String gender, int priority) {

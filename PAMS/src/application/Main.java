@@ -17,6 +17,7 @@ import database.MySQLJDBCUtil;
 public class Main extends Application {
 	
 	public static Stage stage = null;
+	public static DisplayController controller;
 	
 	@Override
 	public void start(Stage stage) throws IOException {
@@ -35,8 +36,8 @@ public class Main extends Application {
 		app.setStyle("-fx-background-color: white;");
 		
 		Scene scene = new Scene(app, screenWidth, height);
-		DisplayController controller = fxml.getController();
-		controller.config(scene);
+		Main.controller = fxml.getController();
+		Main.controller.config(scene);
 		
 		stage.setScene(scene);
 		stage.setTitle("Reception");

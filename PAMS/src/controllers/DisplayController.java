@@ -99,7 +99,7 @@ public class DisplayController {
 	@FXML
 	public void displayAppointments() {
 		contentBox.getChildren().clear();
-		Button btn = new Button("complete day");
+		Button btn = new Button("complete session");
 		btn.setOnAction(e -> {
 			Alert alert = new Alert(AlertType.CONFIRMATION);
 			alert.initOwner(Main.stage);
@@ -111,10 +111,13 @@ public class DisplayController {
         	Optional<ButtonType> result = alert.showAndWait();
         	 
         	if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
+        		if (btn.getText().equalsIgnoreCase("Submit")) {
+        			appointmentDAO.completeSession();
+        			btn.setText("complete session");
+        		}
+        		btn.setText("Submit");
         		((TabPane) ((VBox) contentBox.getChildren().get(0)).getChildren().get(1)).getSelectionModel().select(1);
-        		TabPaneAppointments.newConsulteds.getColumns().get(9).setVisible(true);
-        		
-        		//appointmentDAO.completeSession();    	    
+        		TabPaneAppointments.newConsulteds.getColumns().get(9).setVisible(true);    	    
         	}
 		});
 		

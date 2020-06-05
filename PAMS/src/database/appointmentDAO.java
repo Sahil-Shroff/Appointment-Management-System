@@ -4,24 +4,34 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import application.AppointmentsPage;
+import application.Main;
 import application.Model;
 import application.Patient;
 import application.TabPaneAppointments;
-import javafx.beans.property.SimpleStringProperty;
 
 public class appointmentDAO {
 	
 	public static void completeSession() {
-		String sql1 = "BEGIN;" + "INSERT INTO history( `name`, `gender`, `age`, `fees`, `fees_paid`, `receipt`) " +
-						"SELECT `name`, `gender`, `age`, `priority`, `fees`, `fees_paid`, `receipt` FROM consulteds;";
-		String sql2 = "UPDATE INTO history(`order`, `priority`) " +
-						"SELECT `order`, `priority` FROM new_appointments;";
-		String sql3 = "INSERT INTO new_appointment(`order`, `name`, `gender`, `age`, `priority`) " +
-						"SELECT `order`, `name`, `gender`, `age`, `priority` FROM next_session;";
+		String sql1 = "INSERT INTO history(`order`, name, age, gender, priority, fees, fees_paid, receipt) " + 
+						"SELECT `order`, new_appointment.name,  new_appointment.age, new_appointment.gender, " + 
+						"priority, fees, fees_paid, receipt FROM new_appointment, consulteds WHERE sel = 1;";
+		
+		String sql3 = "TRUNCATE new_appointment;";
+		
+		String sql2 = "INSERT INTO new_appointment(`order`, name, age, gender, priority) " +
+						"SELECT `order`, name, age, gender, priority FROM next_session;";
+		
+		String sql4 = "TRUNCATE consulteds;";
+		String sql5 = "TRUNCATE next_session;";
+		
 		try {
 			MySQLJDBCUtil.dbExecuteUpdate(sql1);
+			MySQLJDBCUtil.dbExecuteUpdate(sql2);
+			MySQLJDBCUtil.dbExecuteUpdate(sql3);
+			MySQLJDBCUtil.dbExecuteUpdate(sql4);
+			MySQLJDBCUtil.dbExecuteUpdate(sql5);
+			Main.controller.displayAppointments();
 		} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 		}
@@ -84,8 +94,10 @@ public class appointmentDAO {
 	public static void updateReceiptStatus(boolean sel, int id, Patient p) {
 		String sql = "UPDATE consulteds SET receipt = 0 WHERE idconsulteds = " + id;
 		if (p.isFeesPaid())
-		if (sel)
+		if (sel) {
 			sql = "UPDATE consulteds SET receipt = 1 WHERE idconsulteds = " + id;
+			p.setSel(true);
+		}
 		try {
 			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
 			psmt.executeUpdate();
@@ -96,9 +108,25 @@ public class appointmentDAO {
 		}
 	}
 	
+	public static void updateSelStatus(boolean sel, int id, Patient p) {
+		String sql = "UPDATE consulteds SET sel = 0 WHERE idconsulteds = " + id;
+		if (sel || p.isReceiptTaken())
+			sql = "UPDATE consulteds SET sel = 1 WHERE idconsulteds = " + id;
+		try {
+			System.out.println(sql);
+			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
+			psmt.executeUpdate();
+			//p.setSel(sel);
+			//System.out.println("Working");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 	public static void loadconsulteds() throws ClassNotFoundException {
 		try {	    
-		    String sql = "SELECT idconsulteds, name, age, gender, fees, fees_paid, receipt FROM consulteds";
+		    String sql = "SELECT idconsulteds, name, age, gender, fees, fees_paid, receipt, sel FROM consulteds";
 		    //PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);
 		    ResultSet rs = MySQLJDBCUtil.dbExecuteQuery(sql);
 		    int income = 0;
@@ -110,7 +138,8 @@ public class appointmentDAO {
 		    	int fees = rs.getInt("fees");
 		    	int feesPaid = rs.getInt("fees_paid");
 		    	int receipt = rs.getInt("receipt");
-		    	Model.consulteds.add(new Patient(id, name, age, gender, fees, feesPaid, receipt));
+		    	boolean sel = rs.getBoolean("sel");
+		    	Model.consulteds.add(new Patient(id, name, age, gender, fees, feesPaid, receipt, sel));
 		    	if (feesPaid > 0)
 		    		income += fees;
 		    }
