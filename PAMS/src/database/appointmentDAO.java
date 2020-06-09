@@ -4,6 +4,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Optional;
+
 import application.AppointmentsPage;
 import application.Main;
 import application.Model;
@@ -13,9 +15,9 @@ import application.TabPaneAppointments;
 public class appointmentDAO {
 	
 	public static void completeSession() {
-		String sql1 = "INSERT INTO history(`order`, name, age, gender, priority, fees, fees_paid, receipt) " + 
-						"SELECT `order`, new_appointment.name,  new_appointment.age, new_appointment.gender, " + 
-						"priority, fees, fees_paid, receipt FROM new_appointment, consulteds WHERE sel = 1;";
+		String sql1 = "INSERT INTO history(`order`, evening, name, age, gender, priority, fees, fees_paid, receipt) " + 
+						"SELECT evening, `order`, new_appointment.name,  new_appointment.age, new_appointment.gender, " + 
+						"priority, fees, fees_paid, receipt FROM app_state, new_appointment, consulteds WHERE sel = 1;";
 		
 		String sql3 = "TRUNCATE new_appointment;";
 		
@@ -34,6 +36,19 @@ public class appointmentDAO {
 			Main.controller.displayAppointments();
 		} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	public static void setEvening(Optional<String> r) {
+		String sql;
+		if (r.get().equalsIgnoreCase("evening"))
+			sql = "UPDATE app_state SET evening = 1;";
+		else
+			sql = "UPDATE app_state SET evening = 0;";
+		try {
+			MySQLJDBCUtil.dbExecuteUpdate(sql);
+		} catch (ClassNotFoundException | SQLException e1) {
+			e1.printStackTrace();
 		}
 	}
 	
@@ -85,7 +100,12 @@ public class appointmentDAO {
 			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
 			psmt.executeUpdate();
 			p.setFeesPaidProperty(pay);
-			//System.out.println("Working");
+			int income = 0;
+			for (Patient patient : TabPaneAppointments.newConsulteds.getItems()) {
+				if (patient.isFeesPaid())
+		    		income += patient.getFees();
+			}
+			AppointmentsPage.income.set(income);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -113,11 +133,9 @@ public class appointmentDAO {
 		if (sel || p.isReceiptTaken())
 			sql = "UPDATE consulteds SET sel = 1 WHERE idconsulteds = " + id;
 		try {
-			System.out.println(sql);
 			PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);//MySQLJDBCUtil.dbExecuteUpdate(sql);
 			psmt.executeUpdate();
-			//p.setSel(sel);
-			//System.out.println("Working");
+			p.setSel(sel);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

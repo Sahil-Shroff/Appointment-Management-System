@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<VBox fx:id="recordDisplay" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="930.0" prefWidth="1599.0" style="-fx-background-color: #e3e3e4;" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.HistoryController">
+   <children>
+      <HBox prefHeight="332.0" prefWidth="1619.0" VBox.vgrow="ALWAYS">
+         <children>
+            <VBox alignment="CENTER" prefHeight="217.0" prefWidth="810.0" style="-fx-background-color: #ffffff;" HBox.hgrow="ALWAYS">
+               <HBox.margin>
+                  <Insets left="180.0" right="200.0" top="10.0" />
+               </HBox.margin>
+               <children>
+                  <Label prefHeight="51.0" prefWidth="163.0" text="Search Records" VBox.vgrow="ALWAYS">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <HBox alignment="CENTER" prefHeight="85.0" prefWidth="728.0" spacing="20.0" VBox.vgrow="ALWAYS">
+                     <children>
+                        <Label prefHeight="24.0" prefWidth="26.0" text="day" HBox.hgrow="ALWAYS">
+                           <font>
+                              <Font size="15.0" />
+                           </font></Label>
+                        <ChoiceBox fx:id="daySelect" prefHeight="6.0" prefWidth="46.0" HBox.hgrow="ALWAYS" />
+                        <Label prefHeight="21.0" prefWidth="71.0" text="month" HBox.hgrow="ALWAYS">
+                           <font>
+                              <Font size="15.0" />
+                           </font></Label>
+                        <ChoiceBox fx:id="monthSelect" prefHeight="26.0" prefWidth="39.0" HBox.hgrow="ALWAYS" />
+                        <Label prefHeight="21.0" prefWidth="36.0" text="year" HBox.hgrow="ALWAYS">
+                           <font>
+                              <Font size="15.0" />
+                           </font></Label>
+                        <ChoiceBox fx:id="yearSelect" prefHeight="26.0" prefWidth="58.0" HBox.hgrow="ALWAYS" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER" prefHeight="82.0" prefWidth="728.0" spacing="5.0" VBox.vgrow="ALWAYS">
+                     <children>
+                        <CheckBox fx:id="renderMonth" mnemonicParsing="false" text="month">
+                           <font>
+                              <Font size="15.0" />
+                           </font>
+                           <HBox.margin>
+                              <Insets left="50.0" />
+                           </HBox.margin>
+                        </CheckBox>
+                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="1.0" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label prefHeight="22.0" prefWidth="73.0" text="collection:" HBox.hgrow="ALWAYS">
+                                 <font>
+                                    <Font size="15.0" />
+                                 </font>
+                              </Label>
+                              <Text fx:id="collection" strokeType="OUTSIDE" strokeWidth="0.0">
+                                 <font>
+                                    <Font size="15.0" />
+                                 </font>
+                              </Text>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" spacing="1.0" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label text="Total Patient:">
+                                 <font>
+                                    <Font size="15.0" />
+                                 </font>
+                              </Label>
+                              <Text fx:id="totalPatient" strokeType="OUTSIDE" strokeWidth="0.0">
+                                 <font>
+                                    <Font size="15.0" />
+                                 </font>
+                              </Text>
+                           </children>
+                           <HBox.margin>
+                              <Insets right="50.0" />
+                           </HBox.margin>
+                        </HBox>
+                     </children>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </HBox>
+                  <Button fx:id="submitBtn" mnemonicParsing="false" onAction="#searchOldRecords" prefHeight="31.0" prefWidth="106.0" text="Submit" VBox.vgrow="ALWAYS">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets bottom="10.0" />
+                     </VBox.margin>
+                  </Button>
+               </children>
+               <padding>
+                  <Insets left="20.0" />
+               </padding>
+            </VBox>
+         </children>
+      </HBox>
+      <TableView fx:id="recordTable" prefHeight="725.0" prefWidth="1298.0" VBox.vgrow="ALWAYS">
+         <VBox.margin>
+            <Insets bottom="20.0" top="10.0" />
+         </VBox.margin>
+      </TableView>
+   </children>
+   <padding>
+      <Insets left="150.0" right="150.0" />
+   </padding>
+</VBox>

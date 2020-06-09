@@ -94,7 +94,7 @@ public class AppointmentsPage {
 					newAppPat.add(new Patient(id, 1 + countAppoint, ageTemp, nameEntry.getText(),
 							genderChoice.getSelectionModel().getSelectedItem(), 0));
 				}
-				TabPaneAppointments.newAppointments.sort();
+				//TabPaneAppointments.newAppointments.sort();
 				nameEntry.clear();
 				nextOpn.selectedProperty().setValue(false);
 				flag = 1;

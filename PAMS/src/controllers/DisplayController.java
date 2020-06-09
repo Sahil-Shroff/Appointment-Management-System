@@ -1,11 +1,12 @@
 package controllers;
 
-import java.sql.SQLException;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
-
+import application.ApplicationState;
 import application.AppointmentsPage;
+import application.CheckForUpdates;
 import application.Main;
 import application.TabPaneAppointments;
 import database.appointmentDAO;
@@ -13,10 +14,12 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.ImageView;
@@ -65,6 +68,7 @@ public class DisplayController {
 	private DoubleProperty refImgSizeY = new SimpleDoubleProperty(1);
 	
 	public void config(Scene scene) {
+		CheckForUpdates.update = appointmentsBtn;
 		fontSize.bind(scene.widthProperty().add(scene.heightProperty()).divide(160));
 		refImgSizeX.bind(scene.widthProperty().divide(1920));
 		refImgSizeY.bind(scene.heightProperty().divide(1080));
@@ -73,7 +77,6 @@ public class DisplayController {
 		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 		String strDate= formatter.format(date);
 		currentDate.textProperty().set(strDate);
-		//System.out.println(strDate);
 		
 		this.menuBtn.styleProperty().bind(Bindings.concat("-fx-scale-x: ", refImgSizeX.asString(), ";",
 													 "-fx-scale-y: ", refImgSizeY.asString(), ";"
@@ -98,6 +101,8 @@ public class DisplayController {
 	
 	@FXML
 	public void displayAppointments() {
+		ApplicationState.setAppointmentDisplayOn(true);
+		ApplicationState.markUpdated();
 		contentBox.getChildren().clear();
 		Button btn = new Button("complete session");
 		btn.setOnAction(e -> {
@@ -112,6 +117,15 @@ public class DisplayController {
         	 
         	if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
         		if (btn.getText().equalsIgnoreCase("Submit")) {
+        			ChoiceDialog<String> choice = new ChoiceDialog<String>("Morning", "Evening");
+        			choice.setTitle("Select");
+        			choice.initOwner(Main.stage);
+        			choice.initStyle(StageStyle.TRANSPARENT);
+        			choice.setContentText("Which session is ended?");
+        			Optional<String> r = choice.showAndWait();
+        			if (r.isPresent()) {
+        				appointmentDAO.setEvening(r);
+        			}
         			appointmentDAO.completeSession();
         			btn.setText("complete session");
         		}
@@ -127,6 +141,21 @@ public class DisplayController {
 		appointments.setSpacing(10.0);
 		appointments.setStyle("-fx-padding: 0 0 0 10; -fx-font-family: sansSherif;");
 		contentBox.getChildren().add(appointments);
+	}
+	
+	@FXML
+	public void displayHistory() {
+		ApplicationState.setAppointmentDisplayOn(false);
+		contentBox.getChildren().clear();
+		FXMLLoader fxml = new FXMLLoader(getClass().getResource("History.fxml"));
+		try {
+			VBox history = fxml.load();
+			HistoryController controller = fxml.getController();
+			controller.config();
+			contentBox.getChildren().add(history);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@FXML

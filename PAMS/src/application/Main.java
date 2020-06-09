@@ -5,14 +5,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-
 import java.io.IOException;
 import java.sql.SQLException;
-
 import controllers.DisplayController;
 import database.MySQLJDBCUtil;
-
 
 public class Main extends Application {
 	
@@ -21,7 +21,9 @@ public class Main extends Application {
 	
 	@Override
 	public void start(Stage stage) throws IOException {
-		
+		ApplicationState.setAppointmentDisplayOn(true);
+		ApplicationState.markUpdated();
+		CheckForUpdates.pollDatabase();
 		Main.stage = stage;
 		int screenWidth = (int) Screen.getPrimary().getBounds().getWidth();
 	    int screenHeight = (int) Screen.getPrimary().getBounds().getHeight();
@@ -40,14 +42,23 @@ public class Main extends Application {
 		Main.controller.config(scene);
 		
 		stage.setScene(scene);
-		stage.setTitle("Reception");
+		stage.setTitle("Doctor");
 		stage.setFullScreen(true);
+		stage.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
+			if (e.isShiftDown() && e.getCode() == KeyCode.ESCAPE) {
+				if (stage.isFullScreen())
+					stage.setFullScreen(false);
+				else
+					stage.setFullScreen(true);
+			}
+		});
 		stage.show();
 	}
 	
 	@Override
 	public void stop() {
 		try {
+			CheckForUpdates.closeConnection();
 			MySQLJDBCUtil.dbDisconnect();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

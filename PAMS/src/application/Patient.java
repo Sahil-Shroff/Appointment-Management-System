@@ -19,11 +19,12 @@ public class Patient {
 	private SimpleIntegerProperty receipt = new SimpleIntegerProperty(1);
 	private SimpleBooleanProperty sel = new SimpleBooleanProperty(false);
 	
-	public Patient() {
-		name = new SimpleStringProperty("");
-		order = new SimpleIntegerProperty(AppointmentsPage.newAppPat.size() + 1);
-		age = new SimpleIntegerProperty(0);
-		gender = new SimpleObjectProperty<String>();
+	public Patient(String name, int age, String gender, int fees, int receipt) {
+		this.name = new SimpleStringProperty(name);
+		this.age = new SimpleIntegerProperty(age);
+		this.gender = new SimpleObjectProperty<String>(gender);
+		this.fees = new SimpleIntegerProperty(fees);
+		this.receipt = new SimpleIntegerProperty(receipt);
 	}
 	
 	public Patient(int id, int order, String name, int age, String gender, int priority) {
@@ -127,17 +128,17 @@ public class Patient {
 	
 	public String getName() { return name.get(); }
 
-	public void setName(String name) { this.name = new SimpleStringProperty(name); }
+	public void setName(String name) { this.name.set(name); }
 
 	public int getAge() { return age.get(); }
 
-	public void setAge(int age) { this.age = new SimpleIntegerProperty(age); }
+	public void setAge(int age) { this.age.set(age); }
 	
 	public ObjectProperty<String> genderProperty() { return gender; }
 
 	public String getGender() {	return gender.get(); }
 
-	public void setGender(String gender) { this.gender = new SimpleObjectProperty<String>(gender); }
+	public void setGender(String gender) { this.gender.set(gender); }
 
 	public SimpleIntegerProperty ageProperty() {	return age;	}
 	

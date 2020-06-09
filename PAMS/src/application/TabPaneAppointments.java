@@ -58,6 +58,7 @@ public class TabPaneAppointments {
 	
 	@SuppressWarnings("unchecked")
 	public static TableView<Patient> getAllNewAppointments() {
+		newAppPat = Model.getAllNewAppointments();
 		newAppointments = new TableView<>(newAppPat);
 		
 		TableColumn<Patient, Number> indexColumn = new TableColumn<Patient, Number>("Sr. No.");
@@ -251,6 +252,7 @@ public class TabPaneAppointments {
 	
 	@SuppressWarnings("unchecked")
 	public static TableView<Patient> getFutureAppointments() {
+		futAppPat = Model.getFutureAppointments();
 		TableView<Patient> futureAppointments = new TableView<>(futAppPat);
 		
 		TableColumn<Patient, Number> indexColumn = new TableColumn<Patient, Number>("Sr. No.");
