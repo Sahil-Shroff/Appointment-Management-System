@@ -1,6 +1,5 @@
 package application;
 
-import java.sql.SQLException;
 import database.appointmentDAO;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
@@ -69,39 +68,34 @@ public class AppointmentsPage {
 			gender.requestFocus();
 			if (flag == 0 && newAppPat.size() != 0)
 				newAppPat.remove(newAppPat.size() - 1);
-			
-			try {
-				if (nextOpn.isSelected()) {
-					int countAppoint = futAppPat.size();
-					int id = appointmentDAO.insertFuturePatient(0);
-					ageTemp = 0;
-					try {
-						ageTemp = Integer.parseInt(ageEntry.getText());
-					} catch (Exception e1) {
-						System.out.println("Exception");
-					}
-					futAppPat.add(new Patient(id, 1 + countAppoint, ageTemp, nameEntry.getText(),
-							genderChoice.getSelectionModel().getSelectedItem(), 0));
-				} else {
-					int countAppoint = newAppPat.size() + TabPaneAppointments.newConsulteds.getItems().size();
-					int id = appointmentDAO.insertPatient(0);
-					ageTemp = 0;
-					try {
-						ageTemp = Integer.parseInt(ageEntry.getText());
-					} catch (Exception e1) {
-						System.out.println("Exception");
-					}
-					newAppPat.add(new Patient(id, 1 + countAppoint, ageTemp, nameEntry.getText(),
-							genderChoice.getSelectionModel().getSelectedItem(), 0));
+			if (nextOpn.isSelected()) {
+				int countAppoint = futAppPat.size();
+				int id = appointmentDAO.insertFuturePatient(0);
+				ageTemp = 0;
+				try {
+					ageTemp = Integer.parseInt(ageEntry.getText());
+				} catch (Exception e1) {
+					System.out.println("Exception");
 				}
-				//TabPaneAppointments.newAppointments.sort();
-				nameEntry.clear();
-				nextOpn.selectedProperty().setValue(false);
-				flag = 1;
-				nameEntry.requestFocus();
-			} catch (ClassNotFoundException | SQLException e1) {
-				e1.printStackTrace();
+				futAppPat.add(new Patient(id, 1 + countAppoint, ageTemp, nameEntry.getText(),
+						genderChoice.getSelectionModel().getSelectedItem(), 0));
+			} else {
+				int countAppoint = newAppPat.size() + TabPaneAppointments.newConsulteds.getItems().size();
+				int id = appointmentDAO.insertPatient(0);
+				ageTemp = 0;
+				try {
+					ageTemp = Integer.parseInt(ageEntry.getText());
+				} catch (Exception e1) {
+					System.out.println("Exception");
+				}
+				newAppPat.add(new Patient(id, 1 + countAppoint, ageTemp, nameEntry.getText(),
+						genderChoice.getSelectionModel().getSelectedItem(), 0));
 			}
+			//TabPaneAppointments.newAppointments.sort();
+			nameEntry.clear();
+			nextOpn.selectedProperty().setValue(false);
+			flag = 1;
+			nameEntry.requestFocus();
 		});
 		
 		genderChoice.setOnKeyPressed((e) -> {

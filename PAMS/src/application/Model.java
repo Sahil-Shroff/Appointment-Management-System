@@ -11,35 +11,20 @@ public class Model {
 	
 	public static ObservableList<Patient> getAllNewAppointments() {
 		newAppPat = FXCollections.<Patient>observableArrayList();
-		try {
-			appointmentDAO.loadNewAppoint();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		appointmentDAO.loadNewAppoint();
 		return newAppPat;
 	}
 
 	public static ObservableList<Patient> getAllNewConsulteds() {
 		consulteds = FXCollections.<Patient>observableArrayList();
-		try {
-			appointmentDAO.loadconsulteds();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		appointmentDAO.loadconsulteds();
 		//System.out.println("ok " + consulteds.size());
 		return consulteds;
 	}
 	
 	public static ObservableList<Patient> getFutureAppointments() {
 		futAppPat = FXCollections.<Patient>observableArrayList();
-		try {
-			appointmentDAO.loadFutureAppoint();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		appointmentDAO.loadFutureAppoint();
 		return futAppPat;
 	}
 }

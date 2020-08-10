@@ -15,9 +15,10 @@ public class CheckForUpdates {
 	
 	private static Connection pollingConn = null;
 	public static Button update = null;
+	public static Thread t;
 	
 	public static void pollDatabase() {
-		Thread t = new Thread(() -> {
+		t = new Thread(() -> {
 			try (FileInputStream f = new FileInputStream("db.properties")) {
 	            Properties pros = new Properties();
 	            pros.load(f);
@@ -67,6 +68,7 @@ public class CheckForUpdates {
 		try {
             if (pollingConn != null && !pollingConn.isClosed()) {
                 pollingConn.close();
+                t.stop();
             }
         } catch (Exception e){
            e.printStackTrace();

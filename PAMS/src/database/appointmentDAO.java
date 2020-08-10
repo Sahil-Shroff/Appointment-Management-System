@@ -15,9 +15,9 @@ import application.TabPaneAppointments;
 public class appointmentDAO {
 	
 	public static void completeSession() {
-		String sql1 = "INSERT INTO history(`order`, evening, name, age, gender, priority, fees, fees_paid, receipt) " + 
+		/*String sql1 = "INSERT INTO history(`order`, evening, name, age, gender, priority, fees, fees_paid, receipt) " + 
 						"SELECT evening, `order`, new_appointment.name,  new_appointment.age, new_appointment.gender, " + 
-						"priority, fees, fees_paid, receipt FROM app_state, new_appointment, consulteds WHERE sel = 1;";
+						"priority, fees, fees_paid, receipt FROM app_state, new_appointment, consulteds WHERE sel = 1;";*/
 		
 		String sql3 = "TRUNCATE new_appointment;";
 		
@@ -28,7 +28,7 @@ public class appointmentDAO {
 		String sql5 = "TRUNCATE next_session;";
 		
 		try {
-			MySQLJDBCUtil.dbExecuteUpdate(sql1);
+			//MySQLJDBCUtil.dbExecuteUpdate(sql1);
 			MySQLJDBCUtil.dbExecuteUpdate(sql2);
 			MySQLJDBCUtil.dbExecuteUpdate(sql3);
 			MySQLJDBCUtil.dbExecuteUpdate(sql4);
@@ -52,7 +52,7 @@ public class appointmentDAO {
 		}
 	}
 	
-	public static void deleteAppoint(int id) throws SQLException, ClassNotFoundException {
+	public static void deleteAppoint(int id) {
         //Declare a DELETE statement
         String updateStmt = "DELETE FROM new_appointment WHERE idnew_table = "+ id + ";";
  
@@ -62,11 +62,10 @@ public class appointmentDAO {
             psmt.executeUpdate();
         } catch (SQLException e) {
             System.out.print("Error occurred while DELETE Operation: " + e);
-            throw e;
         }
     }
 	
-	public static int insertPatient(int priority) throws SQLException, ClassNotFoundException {
+	public static int insertPatient(int priority) {
 		ResultSet rs = null;
         
         String sql = "INSERT INTO new_appointment (`order`, `name`, `gender`, `age`, `priority`) VALUES (?,?,?,?,?);";
@@ -142,7 +141,7 @@ public class appointmentDAO {
 		
 	}
 	
-	public static void loadconsulteds() throws ClassNotFoundException {
+	public static void loadconsulteds() {
 		try {	    
 		    String sql = "SELECT idconsulteds, name, age, gender, fees, fees_paid, receipt, sel FROM consulteds";
 		    //PreparedStatement psmt = MySQLJDBCUtil.conn.prepareStatement(sql);
@@ -162,12 +161,12 @@ public class appointmentDAO {
 		    		income += fees;
 		    }
 			AppointmentsPage.income.set(income);
-		} catch(SQLException e) {
+		} catch(SQLException | ClassNotFoundException e) {
 		   System.out.println(e.getMessage());
 		}
 	}
 	
-	public static void loadNewAppoint() throws ClassNotFoundException {
+	public static void loadNewAppoint() {
 		try {	    
 		    String sql = "SELECT `idnew_table`, `order`, `name`, `age`, `gender`, `priority` FROM new_appointment";
 		    ResultSet rs = MySQLJDBCUtil.dbExecuteQuery(sql);
@@ -180,12 +179,12 @@ public class appointmentDAO {
 		    	int priority = rs.getInt("priority");
 		    	Model.newAppPat.add(new Patient(id, order, name, age, gender, priority));
 		    }
-		} catch(SQLException e) {
+		} catch(SQLException | ClassNotFoundException e) {
 		   System.out.println(e.getMessage());
 		}
 	}
 	
-	public static void loadFutureAppoint() throws ClassNotFoundException {
+	public static void loadFutureAppoint() {
 		try {	    
 		    String sql = "SELECT `idnext_session`, `order`, `name`, `age`, `gender`, `priority` FROM next_session";
 		    ResultSet rs = MySQLJDBCUtil.dbExecuteQuery(sql);
@@ -198,7 +197,7 @@ public class appointmentDAO {
 		    	int priority = rs.getInt("priority");
 		    	Model.futAppPat.add(new Patient(id, order, name, age, gender, priority));
 		    }
-		} catch(SQLException e) {
+		} catch(SQLException | ClassNotFoundException e) {
 		   System.out.println(e.getMessage());
 		}
 	}
@@ -267,7 +266,7 @@ public class appointmentDAO {
 		}
 	}
 	
-	public static void deleteFutureAppoint(int id) throws SQLException, ClassNotFoundException {
+	public static void deleteFutureAppoint(int id) {
 	    //Declare a DELETE statement
 	    String updateStmt = "DELETE FROM next_session WHERE idnext_session = "+ id + ";";
 
@@ -277,11 +276,10 @@ public class appointmentDAO {
 	        psmt.executeUpdate();
 	    } catch (SQLException e) {
 	        System.out.print("Error occurred while DELETE Operation: " + e);
-	        throw e;
 	    }
 	}
 
-	public static int insertFuturePatient(int priority) throws SQLException, ClassNotFoundException {
+	public static int insertFuturePatient(int priority) {
 		ResultSet rs = null;
 	    
 	    String sql = "INSERT INTO next_session (`order`, `name`, `gender`, `age`, `priority`) VALUES (?,?,?,?,?);";

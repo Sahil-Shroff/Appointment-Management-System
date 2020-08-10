@@ -114,24 +114,8 @@ public class DisplayController {
         	alert.setContentText(s);
         	 
         	Optional<ButtonType> result = alert.showAndWait();
-        	 
-        	if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
-        		if (btn.getText().equalsIgnoreCase("Submit")) {
-        			ChoiceDialog<String> choice = new ChoiceDialog<String>("Morning", "Evening");
-        			choice.setTitle("Select");
-        			choice.initOwner(Main.stage);
-        			choice.initStyle(StageStyle.TRANSPARENT);
-        			choice.setContentText("Which session is ended?");
-        			Optional<String> r = choice.showAndWait();
-        			if (r.isPresent()) {
-        				appointmentDAO.setEvening(r);
-        			}
-        			appointmentDAO.completeSession();
-        			btn.setText("complete session");
-        		}
-        		btn.setText("Submit");
-        		((TabPane) ((VBox) contentBox.getChildren().get(0)).getChildren().get(1)).getSelectionModel().select(1);
-        		TabPaneAppointments.newConsulteds.getColumns().get(9).setVisible(true);    	    
+        	if ((result.isPresent()) && (result.get() == ButtonType.OK)) {    			
+    			appointmentDAO.completeSession(); 	    
         	}
 		});
 		

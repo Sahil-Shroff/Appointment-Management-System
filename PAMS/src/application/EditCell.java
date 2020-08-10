@@ -40,6 +40,73 @@ public class EditCell < S, T > extends TextFieldTableCell < S, T > {
         final StringConverter < T > converter) {
         return list -> new EditCell < S, T > (converter);
     }
+    
+    @SuppressWarnings("unused")
+	public static void setTableEditable(TableView<Patient> tableView) {
+        tableView.setEditable(true);
+        // allows the individual cells to be selected
+        tableView.getSelectionModel().cellSelectionEnabledProperty().set(true);
+        // when character or numbers pressed it will start edit in editable
+        // fields
+        
+        tableView.setOnKeyPressed(event -> {
+            if (event.getCode().isLetterKey() || event.getCode().isDigitKey()) {
+                editFocusedCell(tableView);
+            } else if (event.getCode() == KeyCode.RIGHT ||
+                event.getCode() == KeyCode.TAB) {
+                tableView.getSelectionModel().selectNext();
+                event.consume();
+            } else if (event.getCode() == KeyCode.LEFT) {
+                // work around due to
+                // TableView.getSelectionModel().selectPrevious() due to a bug
+                // stopping it from working on
+                // the first column in the last row of the table
+                selectPrevious(tableView);
+                event.consume();
+            }
+        });
+    }
+    
+    @SuppressWarnings({ "unchecked", "unused" })
+    private static void editFocusedCell(TableView<Patient> tableView) {
+        final TablePosition < Patient, ? > focusedCell = tableView
+            .focusModelProperty().get().focusedCellProperty().get();
+        tableView.edit(focusedCell.getRow(), focusedCell.getTableColumn());
+    }
+    
+    @SuppressWarnings({ "unchecked", "unused" })
+    private static void selectPrevious(TableView<Patient> tableView) {
+        if (tableView.getSelectionModel().isCellSelectionEnabled()) {
+            // in cell selection mode, we have to wrap around, going from
+            // right-to-left, and then wrapping to the end of the previous line
+            TablePosition < Patient, ? > pos = tableView.getFocusModel()
+                .getFocusedCell();
+            if (pos.getColumn() - 1 >= 0) {
+                // go to previous row
+                tableView.getSelectionModel().select(pos.getRow(),
+                    getTableColumn(tableView, pos.getTableColumn(), -1));
+            } else if (pos.getRow() < tableView.getItems().size()) {
+                // wrap to end of previous row
+                tableView.getSelectionModel().select(pos.getRow() - 1,
+                    tableView.getVisibleLeafColumn(
+                        tableView.getVisibleLeafColumns().size() - 1));
+            }
+        } else {
+            int focusIndex = tableView.getFocusModel().getFocusedIndex();
+            if (focusIndex == -1) {
+                tableView.getSelectionModel().select(tableView.getItems().size() - 1);
+            } else if (focusIndex > 0) {
+                tableView.getSelectionModel().select(focusIndex - 1);
+            }
+        }
+    }
+    private static TableColumn < Patient, ? > getTableColumn(
+    	TableView<Patient> tableView, final TableColumn < Patient, ? > column, int offset) {
+        int columnIndex = tableView.getVisibleLeafIndex(column);
+        int newColumnIndex = columnIndex + offset;
+        return tableView.getVisibleLeafColumn(newColumnIndex);
+    }
+    
     @Override
     public void startEdit() {
     	Alert alert = new Alert(AlertType.CONFIRMATION);
